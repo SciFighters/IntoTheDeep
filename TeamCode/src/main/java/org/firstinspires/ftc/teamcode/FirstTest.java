@@ -37,17 +37,27 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ClassUtil;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-
-import java.lang.annotation.Target;
 
 import lombok.Getter;
 import lombok.Setter;
 
+class Unwrap{
+    double lastAngle = 0;
+    double update(double angle) {
+        double delta = angle - lastAngle;
+        if(delta > 180){
+            angle -=  360;
+        } else if (delta < -180){
+            angle +=  360;
+        }
+        lastAngle = angle;
+        return angle;
+    }
+}
+@Config
 class SteeringServo {
 
     private double power = 0;
@@ -57,9 +67,12 @@ class SteeringServo {
     @Getter double currentAngle ;
     @Getter double targetAngle;
 
-    @Getter @Setter double p = 0.15;
-
+    public static @Getter @Setter double p = 1;
     double min=0.007, max=3.277 ;
+
+    Unwrap unwrap = new Unwrap();
+    double unwrapAngle = 0;
+
     SteeringServo(CRServo servo, AnalogInput encoder) {
         this.servo = servo;
         this.encoder = encoder;
@@ -69,7 +82,6 @@ class SteeringServo {
         this.power = power;
         servo.setPower(power);
     }
-
 
     void setTargetAngle(double target){
         targetAngle = target;
@@ -101,11 +113,16 @@ class SteeringServo {
         return delta;
     }
 
-    void update(){
+    void update() {
         double currentAngle = getCurrentAngle();
+        unwrapAngle = unwrap.update(currentAngle);
         double error = calcDeltaAngle(targetAngle, currentAngle);
-        power = error * p;
+        power = -error/180 * p;
         setPower(power);
+    }
+
+    double getUnwrappedAngle(){
+        return unwrapAngle;
     }
 }
 
@@ -134,6 +151,27 @@ class SteeringMotor {
     }
 }
 
+class SwerveWheel{
+    SteeringServo servo;
+    SteeringMotor motor;
+    SwerveWheel(DcMotor motor, CRServo servo, AnalogInput encoder){
+        this.motor = new SteeringMotor(motor);
+        this.servo = new SteeringServo(servo, encoder);
+    }
+
+    void setHeading(double angle){
+        double delta = servo.calcDeltaAngle(angle, servo.getCurrentAngle());
+        if(Math.abs(delta) > 90) {
+            angle = (angle + 180) % 360;
+        }
+        servo.setTargetAngle(angle);
+    }
+    void setPower(){
+
+    }
+}
+
+
 @TeleOp(name="First", group="Tests")
 //@Disabled
 @Config
@@ -147,6 +185,8 @@ public class FirstTest extends LinearOpMode {
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
     MultipleTelemetry multipleTelemetry = new MultipleTelemetry(telemetry, dashboardTelemetry);
+    public static double t1 =0, t2 =90;
+
 
     @Override
     public void runOpMode() {
@@ -173,11 +213,11 @@ public class FirstTest extends LinearOpMode {
 
             if (timer.seconds() > 2) {
                 if(motorPower == 0){
-                    servo.setTargetAngle(0);
+                    servo.setTargetAngle(t1);
                     motorPower = 0.2;
                 } else {
                     motorPower = 0;
-                    servo.setTargetAngle(90);
+                    servo.setTargetAngle(t2);
                 }
                 timer.reset();
             }
@@ -189,7 +229,7 @@ public class FirstTest extends LinearOpMode {
             multipleTelemetry.addData("motor encoder", motor.getEncoderValue());
             multipleTelemetry.addData("Max", servo.max);
             multipleTelemetry.addData("Min", servo.min);
-            multipleTelemetry.addData("current angle", servo.getCurrentAngle());
+            multipleTelemetry.addData("current angle", servo.getUnwrappedAngle());
             multipleTelemetry.addData("target angle", servo.targetAngle);
             multipleTelemetry.update();
         }
