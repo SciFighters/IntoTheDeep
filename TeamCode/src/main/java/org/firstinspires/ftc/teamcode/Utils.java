@@ -17,4 +17,7 @@ public class Utils {
     public static double signRoot(double x){
         return Math.sqrt(Math.abs(x)) * Math.signum(x);
     }
+    public static double signSquare(double x){
+        return x * x * Math.signum(x);
+    }
 }

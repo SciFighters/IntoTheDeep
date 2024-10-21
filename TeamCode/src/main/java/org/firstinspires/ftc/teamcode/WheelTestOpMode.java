@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -58,7 +59,7 @@ class SteeringServoDorel {
 }
 
 @Config
-@TeleOp(name = "WheelTest")
+@Disabled
 public class WheelTestOpMode extends LinearOpMode {
     //best so far 0.35 for p and 0.75 for w
     //bottom left servo = 1
