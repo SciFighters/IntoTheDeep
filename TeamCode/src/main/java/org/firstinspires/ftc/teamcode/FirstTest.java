@@ -44,133 +44,6 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import lombok.Getter;
 import lombok.Setter;
 
-class Unwrap{
-    double lastAngle = 0;
-    double update(double angle) {
-        double delta = angle - lastAngle;
-        if(delta > 180){
-            angle -=  360;
-        } else if (delta < -180){
-            angle +=  360;
-        }
-        lastAngle = angle;
-        return angle;
-    }
-}
-@Config
-class SteeringServo {
-
-    private double power = 0;
-    private CRServo servo;
-    private AnalogInput encoder;
-
-    @Getter double currentAngle ;
-    @Getter double targetAngle;
-
-    public static @Getter @Setter double p = 1;
-    double min=0.007, max=3.277 ;
-
-    Unwrap unwrap = new Unwrap();
-    double unwrapAngle = 0;
-
-    SteeringServo(CRServo servo, AnalogInput encoder) {
-        this.servo = servo;
-        this.encoder = encoder;
-    }
-
-    void setPower( double power) {
-        this.power = power;
-        servo.setPower(power);
-    }
-
-    void setTargetAngle(double target){
-        targetAngle = target;
-    }
-
-    double getEncoderVoltage(){
-        double v = encoder.getVoltage();
-//        if(v > max){
-//            max = v;
-//        }else if(v < min){
-//            min = v;
-//        }
-        return v;
-    }
-
-    double getCurrentAngle(){
-      double v = getEncoderVoltage();
-      currentAngle = ((v-min)/(max-min))*360;
-      return currentAngle;
-    }
-
-    double calcDeltaAngle(double target, double current) {
-        double delta = target - current;
-        if(delta > 180){
-            delta = delta - 360;
-        }else if(delta < -180){
-            delta = 360+ delta;
-        }
-        return delta;
-    }
-
-    void update() {
-        double currentAngle = getCurrentAngle();
-        unwrapAngle = unwrap.update(currentAngle);
-        double error = calcDeltaAngle(targetAngle, currentAngle);
-        power = -error/180 * p;
-        setPower(power);
-    }
-
-    double getUnwrappedAngle(){
-        return unwrapAngle;
-    }
-}
-
-class SteeringMotor {
-    double power = 0;
-    DcMotor motor;
-    SteeringMotor(DcMotor motor) {
-        this.motor = motor;
-    }
-
-    void setPower( double power) {
-        this.power = power;
-        motor.setPower(power);
-    }
-
-    double getPower() {
-        return power;
-    }
-
-    void setDirection(DcMotor.Direction direction){
-        motor.setDirection(direction);
-    }
-
-    double getEncoderValue() {
-        return motor.getCurrentPosition();
-    }
-}
-
-class SwerveWheel{
-    SteeringServo servo;
-    SteeringMotor motor;
-    SwerveWheel(DcMotor motor, CRServo servo, AnalogInput encoder){
-        this.motor = new SteeringMotor(motor);
-        this.servo = new SteeringServo(servo, encoder);
-    }
-
-    void setHeading(double angle){
-        double delta = servo.calcDeltaAngle(angle, servo.getCurrentAngle());
-        if(Math.abs(delta) > 90) {
-            angle = (angle + 180) % 360;
-        }
-        servo.setTargetAngle(angle);
-    }
-    void setPower(){
-
-    }
-}
-
 
 @TeleOp(name="First", group="Tests")
 //@Disabled
@@ -180,12 +53,13 @@ public class FirstTest extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private ElapsedTime timer = new ElapsedTime();
     double servoPower = 0, motorPower = 0;
-    private SteeringMotor motor = null;
-    private SteeringServo servo = null;
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
     MultipleTelemetry multipleTelemetry = new MultipleTelemetry(telemetry, dashboardTelemetry);
+    public static boolean square = false ;
     public static double t1 =0, t2 =90;
+    public static double power = 0.1;
+    private SwerveModule swerveModule;
 
 
     @Override
@@ -196,13 +70,13 @@ public class FirstTest extends LinearOpMode {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        motor = new SteeringMotor(hardwareMap.get(DcMotor.class, "motor"));
-        servo = new SteeringServo(hardwareMap.get(CRServo.class, "servo"), hardwareMap.analogInput.get("encoder"));
-
+        swerveModule = new SwerveModule(hardwareMap.get(DcMotor.class, "motor"),
+                hardwareMap.get(CRServo.class, "servo"),
+                hardwareMap.analogInput.get("encoder"));
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        motor.setDirection(DcMotor.Direction.REVERSE);
+
 
         // Wait for the game to start (driver presses START)
         waitForStart();
@@ -211,26 +85,26 @@ public class FirstTest extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
-            if (timer.seconds() > 2) {
+            if (!square) {
+                swerveModule.setHeading(t1);
+                motorPower = power;
+            } else if (timer.seconds() > 2) {
                 if(motorPower == 0){
-                    servo.setTargetAngle(t1);
-                    motorPower = 0.2;
+                    swerveModule.setHeading(t1);
+                    motorPower = power;
                 } else {
                     motorPower = 0;
-                    servo.setTargetAngle(t2);
+                    swerveModule.setHeading(t2);
                 }
                 timer.reset();
             }
 
-            motor.setPower(motorPower);
-            servo.update();
+            swerveModule.setPower(motorPower);
+            swerveModule.update();
             // Show the elapsed game time and wheel power.
-            multipleTelemetry.addData("servo voltage", servo.getEncoderVoltage());
-            multipleTelemetry.addData("motor encoder", motor.getEncoderValue());
-            multipleTelemetry.addData("Max", servo.max);
-            multipleTelemetry.addData("Min", servo.min);
-            multipleTelemetry.addData("current angle", servo.getUnwrappedAngle());
-            multipleTelemetry.addData("target angle", servo.targetAngle);
+            multipleTelemetry.addData("motor encoder", swerveModule.getPosition());
+            multipleTelemetry.addData("target angle", swerveModule.getTargetHeading());
+            multipleTelemetry.addData("current angle", swerveModule.getCurrentHeading());
             multipleTelemetry.update();
         }
     }
