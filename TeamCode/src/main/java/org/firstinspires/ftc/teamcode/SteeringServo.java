@@ -8,11 +8,13 @@ import lombok.Setter;
 
 public class SteeringServo {
 
+    private boolean idle = false;
     private double power = 0;
     private final double w = -0.7;
     private CRServo servo;
     private AnalogInput encoder;
-
+    private final double noiseCuttoff = 1;
+    private double angleOffset;
     @Getter
     double currentAngle ;
     @Getter double targetAngle;
@@ -20,12 +22,23 @@ public class SteeringServo {
     public static @Getter @Setter double p = 0.5;
     double min=0.007, max=3.277 ;
 
-    double unwrapAngle = 0;
-
-    SteeringServo(CRServo servo, AnalogInput encoder) {
+    SteeringServo(CRServo servo, AnalogInput encoder, double headingOffset) {
         this.servo = servo;
         this.encoder = encoder;
+        this.angleOffset = headingOffset;
     }
+
+//    public void setIdle(boolean on){
+//        if(on != idle) {
+//            if (on) {
+//                servo.setPower(0);
+//            } else {
+//                //servo.setDirection();
+//            }
+//            idle = on;
+//        }
+//    }
+
 
     void setPower( double power) {
         this.power = power;
@@ -51,8 +64,18 @@ public class SteeringServo {
 
     double getCurrentAngle(){
         double v = getEncoderVoltage();
-        currentAngle = ((v-min)/(max-min))*360;
+        currentAngle = ((v-min)/(max-min))*360 - angleOffset;
         return currentAngle;
+    }
+    public void setAngleOffset(double angle){
+        angleOffset = angle;
+    }
+    public double getAngleOffset(){
+        return angleOffset;
+    }
+    public void zeroHeading() {
+        angleOffset = 0;
+        angleOffset = getCurrentAngle();
     }
 
     double calcDeltaAngle(double target, double current) {
@@ -73,11 +96,12 @@ public class SteeringServo {
 
         power = (w >= 0) ? (Utils.signRoot(ne) * (w) + ne * (1 - w)) * p :
                 (ne * Math.abs(ne) *(Math.abs(w)) + ne *(1 + w)) * p ;
-//        power = -error/180 * p;
+
+        if(Math.abs(error) >= noiseCuttoff) {
+            power += Math.signum(power) * Math.random() * 0.05;
+        }
         setPower(power);
     }
 
-    double getUnwrappedAngle(){
-        return unwrapAngle;
-    }
+
 }

@@ -3,16 +3,20 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 public class SwerveModule {
     SteeringServo servo;
     DcMotor motor;
     double isMotorFlipped = 1;
-    SwerveModule(DcMotor motor, CRServo servo, AnalogInput encoder){
+
+    SwerveModule(DcMotor motor, CRServo servo, AnalogInput encoder, double headingOffset){
         this.motor = motor;
         this.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        this.servo = new SteeringServo(servo, encoder);
+        this.servo = new SteeringServo(servo, encoder,headingOffset);
+    }
+    public void zeroHeading(){
+        isMotorFlipped = 1;
+        servo.zeroHeading();
     }
 
     void setHeading(double angle){
@@ -27,6 +31,9 @@ public class SwerveModule {
             isMotorFlipped = 1;
         }
         servo.setTargetAngle(angle);
+    }
+    void setServoPower(double power){
+        servo.setPower(power);
     }
     public double getCurrentHeading(){
         return servo.getCurrentAngle();
