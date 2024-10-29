@@ -8,11 +8,13 @@ public class SwerveModule {
     SteeringServo servo;
     DcMotor motor;
     double isMotorFlipped = 1;
+    double headingOffset;
 
     SwerveModule(DcMotor motor, CRServo servo, AnalogInput encoder, double headingOffset){
         this.motor = motor;
         this.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         this.servo = new SteeringServo(servo, encoder,headingOffset);
+        this.headingOffset = headingOffset;
     }
     public void zeroHeading(){
         isMotorFlipped = 1;
@@ -20,9 +22,7 @@ public class SwerveModule {
     }
 
     void setHeading(double angle){
-//        if (isMotorFlipped < 0) {
-//            angle = (angle + 180) % 360;
-//        }
+
         double delta = servo.calcDeltaAngle(angle, servo.getCurrentAngle());
         if (Math.abs(delta) > 90) {
             angle = (angle + 180) % 360;
