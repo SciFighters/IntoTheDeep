@@ -89,6 +89,10 @@ public class WheelTest extends LinearOpMode {
             multipleTelemetry.addData("motor position: ",cr.getPosition());
             multipleTelemetry.addData("angle diff:",(wantedAngle - cr.getCurrentHeading()) % 180);
             multipleTelemetry.addData("offset", cr.servo.getAngleOffset());
+            multipleTelemetry.addData("bl position",bl.getPosition());
+            multipleTelemetry.addData("br position",br.getPosition());
+            multipleTelemetry.addData("fl position",fl.getPosition());
+            multipleTelemetry.addData("fr position",fr.getPosition());
             multipleTelemetry.update();
 
         }

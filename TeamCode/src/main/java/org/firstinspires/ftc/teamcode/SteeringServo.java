@@ -28,18 +28,6 @@ public class SteeringServo {
         this.angleOffset = headingOffset;
     }
 
-//    public void setIdle(boolean on){
-//        if(on != idle) {
-//            if (on) {
-//                servo.setPower(0);
-//            } else {
-//                //servo.setDirection();
-//            }
-//            idle = on;
-//        }
-//    }
-
-
     void setPower( double power) {
         this.power = power;
         servo.setPower(power);
@@ -54,11 +42,6 @@ public class SteeringServo {
     }
     double getEncoderVoltage(){
         double v = encoder.getVoltage();
-//        if(v > max){
-//            max = v;
-//        }else if(v < min){
-//            min = v;
-//        }
         return v;
     }
 

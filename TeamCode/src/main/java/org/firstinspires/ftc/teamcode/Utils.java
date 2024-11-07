@@ -20,4 +20,13 @@ public class Utils {
     public static double signSquare(double x){
         return x * x * Math.signum(x);
     }
+    public static double calcDeltaAngle(double target, double current) {
+        double delta = target - current;
+        if(delta > 180){
+            delta = delta - 360;
+        }else if(delta < -180){
+            delta = 360+ delta;
+        }
+        return delta;
+    }
 }

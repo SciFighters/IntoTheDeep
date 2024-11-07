@@ -22,7 +22,6 @@ public class SwerveModule {
     }
 
     void setHeading(double angle){
-
         double delta = servo.calcDeltaAngle(angle, servo.getCurrentAngle());
         if (Math.abs(delta) > 90) {
             angle = (angle + 180) % 360;
@@ -43,6 +42,9 @@ public class SwerveModule {
     }
     public void setPower(double power){
         motor.setPower(power * isMotorFlipped);
+    }
+    public double getPower(){
+        return motor.getPower();
     }
     public double getPosition(){
         return (double)motor.getCurrentPosition() / 100;
