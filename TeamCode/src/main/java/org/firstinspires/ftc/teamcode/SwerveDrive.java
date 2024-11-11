@@ -54,17 +54,17 @@ public class SwerveDrive {
     }
     //like update but here
     public void Drive(double x, double y, double rotation){
-        if (Math.hypot(x,y) < 0.05 && Math.abs(rotation) < 0.05){
-            fl.setPower(0);
-            fr.setPower(0);
-            bl.setPower(0);
-            br.setPower(0);
-            fl.update();
-            fr.update();
-            br.update();
-            bl.update();
-            return;
-        }
+//        if (Math.hypot(x,y) < 0.05 && Math.abs(rotation) < 0.05){
+//            fl.setPower(0);
+//            fr.setPower(0);
+//            bl.setPower(0);
+//            br.setPower(0);
+//            fl.update();
+//            fr.update();
+//            br.update();
+//            bl.update();
+//            return;
+//        }
         if (Math.abs(rotation) < 0.04){
             if (wasSpinning){
                 noTurnElapsedTime = runtime.seconds();
@@ -76,8 +76,8 @@ public class SwerveDrive {
                 wantedAngle = getHeading();
             }
             if (isUsingAngleCorrection){
-                rotation += -Utils.signRoot(Utils.calcDeltaAngle(wantedAngle, getHeading()) * kp ) ;
-
+//                rotation += -Utils.signRoot(Utils.calcDeltaAngle(wantedAngle, getHeading()) * kp ) ;
+                rotation -= (Utils.calcDeltaAngle(wantedAngle,getHeading())) * kp;
             }
 
         }
@@ -95,7 +95,8 @@ public class SwerveDrive {
         }
         modulateSpeeds(wheelVectors);
         updateSwerveModules(wheelVectors);
-        telemetry();
+        telemetry.addData("kp", kp);
+//        telemetry();
     }
     private void angleCorrection(double rotation){
 
