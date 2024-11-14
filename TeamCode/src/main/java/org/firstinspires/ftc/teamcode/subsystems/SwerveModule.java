@@ -1,16 +1,18 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.SteeringServo;
+
 public class SwerveModule {
-    SteeringServo servo;
+    public SteeringServo servo;
     DcMotor motor;
     double isMotorFlipped = 1;
     double headingOffset;
 
-    SwerveModule(DcMotor motor, CRServo servo, AnalogInput encoder, double headingOffset){
+    public SwerveModule(DcMotor motor, CRServo servo, AnalogInput encoder, double headingOffset){
         this.motor = motor;
         this.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         this.servo = new SteeringServo(servo, encoder,headingOffset);
@@ -21,7 +23,7 @@ public class SwerveModule {
         servo.zeroHeading();
     }
 
-    void setHeading(double angle){
+    public void setHeading(double angle){
         double delta = servo.calcDeltaAngle(angle, servo.getCurrentAngle());
         if (Math.abs(delta) > 90) {
             angle = (angle + 180) % 360;
@@ -31,7 +33,7 @@ public class SwerveModule {
         }
         servo.setTargetAngle(angle);
     }
-    void setServoPower(double power){
+    public void setServoPower(double power){
         servo.setPower(power);
     }
     public double getCurrentHeading(){

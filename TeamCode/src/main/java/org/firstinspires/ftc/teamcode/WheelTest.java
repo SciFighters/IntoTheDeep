@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.subsystems.SwerveModule;
+
 @TeleOp(group = "tests")
 public class WheelTest extends LinearOpMode {
     // bl: servo = 1, analog = 0, motor = 0

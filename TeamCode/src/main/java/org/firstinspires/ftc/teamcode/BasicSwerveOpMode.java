@@ -4,56 +4,60 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.arcrobotics.ftclib.command.CommandOpMode;
+import com.arcrobotics.ftclib.command.CommandScheduler;
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.commands.SwerveCommands;
+import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
 
 
 @TeleOp(group = "swerve")
-public class BasicSwerveOpMode extends LinearOpMode {
-
-
+public class BasicSwerveOpMode extends CommandOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private SwerveDrive swerveDrive;
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
     MultipleTelemetry multipleTelemetry = new MultipleTelemetry(telemetry, dashboardTelemetry);
-    @Override
-    public void runOpMode() {
+    GamepadEx driverGamepad;
 
-        swerveDrive = new SwerveDrive(hardwareMap,multipleTelemetry);
+    @Override
+    public void initialize() {
+        driverGamepad = new GamepadEx(gamepad1);
+        swerveDrive = new SwerveDrive(hardwareMap, multipleTelemetry);
+        register(swerveDrive);
+
+//        CommandScheduler.getInstance().setDefaultCommand(swerveDrive,new SwerveCommands.PowerCmd(telemetry, swerveDrive, driverGamepad::getLeftX, driverGamepad::getLeftY, driverGamepad::getRightX, () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER)));
+        swerveDrive.setDefaultCommand(new SwerveCommands.PowerCmd(telemetry, swerveDrive,
+                driverGamepad::getLeftX, driverGamepad::getLeftY, driverGamepad::getRightX,
+                () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER)));
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
-        waitForStart();
+    }
 
-        runtime.reset();
-        while (opModeIsActive() && !isStopRequested()) {
-            if(gamepad1.dpad_up){
-                swerveDrive.kp += 0.001;
-            }
-            if(gamepad1.dpad_down){
-                swerveDrive.kp -= 0.001;
-            }
-            swerveDrive.Drive(gamepad1.left_stick_x,-gamepad1.left_stick_y,-gamepad1.right_stick_x);
-            if(gamepad1.right_trigger > 0.2 && gamepad1.left_trigger > 0.2){
-                swerveDrive.boost = 0.6;
-            }
-            else if(gamepad1.right_trigger > 0.2 || gamepad1.left_trigger > 0.2){
-                swerveDrive.boost = 0.45;
-            }
-            else {
-                swerveDrive.boost = 0.3;
-            }
-            telemetry.addData("lx: ",gamepad1.left_stick_x);
-            telemetry.addData("ly: ",gamepad1.left_stick_y);
-            telemetry.addData("rx: ",gamepad1.right_stick_x);
-            telemetry.addData("heading",swerveDrive.getHeading());
-            telemetry.addData("bl heading",swerveDrive.bl.getCurrentHeading());
-            telemetry.update();
-
-        }
+    @Override
+    public void run() {
+        super.run();
+        telemetry.addData("e", "e");
+        telemetry.update();
+//
+//        if (gamepad1.dpad_up) {
+//            swerveDrive.kp += 0.001;
+//        }
+//        if (gamepad1.dpad_down) {
+//            swerveDrive.kp -= 0.001;
+//        }
+        telemetry.addData("ly: ", driverGamepad.getLeftX());
+        telemetry.addData("rx: ", driverGamepad.getLeftY());
+        telemetry.addData("lx: ", driverGamepad.getRightX());
+        telemetry.addData("heading", swerveDrive.getHeading());
+        telemetry.update();
     }
 }

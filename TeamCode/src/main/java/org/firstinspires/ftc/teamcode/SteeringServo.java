@@ -22,22 +22,22 @@ public class SteeringServo {
     public static @Getter @Setter double p = 0.5;
     double min=0.007, max=3.277 ;
 
-    SteeringServo(CRServo servo, AnalogInput encoder, double headingOffset) {
+    public SteeringServo(CRServo servo, AnalogInput encoder, double headingOffset) {
         this.servo = servo;
         this.encoder = encoder;
         this.angleOffset = headingOffset;
     }
 
-    void setPower( double power) {
+    public void setPower(double power) {
         this.power = power;
         servo.setPower(power);
     }
 
-    void setTargetAngle(double target){
+    public void setTargetAngle(double target){
         targetAngle = target;
     }
 
-    double getTargetAngle(){
+    public double getTargetAngle(){
         return targetAngle;
     }
     double getEncoderVoltage(){
@@ -45,7 +45,7 @@ public class SteeringServo {
         return v;
     }
 
-    double getCurrentAngle(){
+    public double getCurrentAngle(){
         double v = getEncoderVoltage();
         currentAngle = ((v-min)/(max-min))*360 - angleOffset;
         return currentAngle;
@@ -61,7 +61,7 @@ public class SteeringServo {
         angleOffset = getCurrentAngle();
     }
 
-    double calcDeltaAngle(double target, double current) {
+    public double calcDeltaAngle(double target, double current) {
         double delta = target - current;
         if(delta > 180){
             delta = delta - 360;
@@ -71,7 +71,7 @@ public class SteeringServo {
         return delta;
     }
 
-    void update() {
+    public void update() {
         double currentAngle = getCurrentAngle();
 
         double error = calcDeltaAngle(targetAngle, currentAngle);
