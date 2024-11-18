@@ -1,25 +1,28 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 
 import lombok.Getter;
 import lombok.Setter;
 
+@Config
 public class SteeringServo {
+    public static double noiseGain = 0.05;
+    public static double noiseCuttoff = 0.5;
+    public static double w = -0.7;
+    public static double p = 0.5;
 
     private boolean idle = false;
     private double power = 0;
-    private final double w = -0.7;
     private CRServo servo;
     private AnalogInput encoder;
-    private final double noiseCuttoff = 1;
     private double angleOffset;
     @Getter
     double currentAngle ;
     @Getter double targetAngle;
 
-    public static @Getter @Setter double p = 0.5;
     double min=0.007, max=3.277 ;
 
     public SteeringServo(CRServo servo, AnalogInput encoder, double headingOffset) {
@@ -75,13 +78,13 @@ public class SteeringServo {
         double currentAngle = getCurrentAngle();
 
         double error = calcDeltaAngle(targetAngle, currentAngle);
-        double ne = -error /90;
+        double ne = -error /90;  // negative normalized error (-1..1)
 
         power = (w >= 0) ? (Utils.signRoot(ne) * (w) + ne * (1 - w)) * p :
                 (ne * Math.abs(ne) *(Math.abs(w)) + ne *(1 + w)) * p ;
 
-        if(Math.abs(error) >= noiseCuttoff) {
-            power += Math.signum(power) * Math.random() * 0.05;
+        if(Math.abs(error) > noiseCuttoff) {
+            power += Math.signum(power) * Math.random() * noiseGain;
         }
         setPower(power);
     }

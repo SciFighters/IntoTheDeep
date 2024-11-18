@@ -33,7 +33,7 @@ public class SwerveCommands {
             telemetry.addData("X", x.get());
             telemetry.addData("Y", y.get());
             telemetry.addData("TURN", r.get());
-            swerveDrive.drive(x.get(), y.get(), -r.get(), boost.get());
+            swerveDrive.drive(x.get(), y.get(), r.get(), boost.get()/2);
         }
     }
 }

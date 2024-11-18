@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -11,6 +12,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.Utils;
 
+@Config
 public class SwerveDrive extends SubsystemBase {
     private final ElapsedTime runtime = new ElapsedTime();
 
@@ -26,26 +28,26 @@ public class SwerveDrive extends SubsystemBase {
     double wantedAngle = 0;
     boolean wasSpinning = false, isUsingAngleCorrection, wasTimeSelected;
     double noTurnElapsedTime = 0;
-    double timeTillCorrection = 1;
-    public double kp = 0.02;
-
-
+    double timeTillCorrection = 0.25;
+    public static double kp = 0.02;
+    public double[] position = {0,0};
+    private final int ticksPerMeter = 1007;
     public SwerveDrive(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
 
         this.telemetry = telemetry;
 
         bl = new SwerveModule(hardwareMap.get(DcMotor.class, "bl_motor"),
                 hardwareMap.get(CRServo.class, "bl_servo"),
-                hardwareMap.analogInput.get("bl_encoder"), 147.85321100917432);
+                hardwareMap.analogInput.get("bl_encoder"), 314.64);
         br = new SwerveModule(hardwareMap.get(DcMotor.class, "br_motor"),
                 hardwareMap.get(CRServo.class, "br_servo"),
-                hardwareMap.analogInput.get("br_encoder"), 77.94495412844036);
+                hardwareMap.analogInput.get("br_encoder"), 54.93);
         fl = new SwerveModule(hardwareMap.get(DcMotor.class, "fl_motor"),
                 hardwareMap.get(CRServo.class, "fl_servo"),
-                hardwareMap.analogInput.get("fl_encoder"), 44.697247706422026);
+                hardwareMap.analogInput.get("fl_encoder"), 353.5);
         fr = new SwerveModule(hardwareMap.get(DcMotor.class, "fr_motor"),
                 hardwareMap.get(CRServo.class, "fr_servo"),
-                hardwareMap.analogInput.get("fr_encoder"), 84);
+                hardwareMap.analogInput.get("fr_encoder"), 346.9);
 
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -79,7 +81,7 @@ public class SwerveDrive extends SubsystemBase {
             }
             if (isUsingAngleCorrection) {
 //                rotation += -Utils.signRoot(Utils.calcDeltaAngle(wantedAngle, getHeading()) * kp ) ;
-                rotation -= (Utils.calcDeltaAngle(wantedAngle, getHeading())) * kp;
+                rotation += (Utils.calcDeltaAngle(wantedAngle, getHeading())) * kp;
             }
 
         } else {
@@ -167,9 +169,9 @@ public class SwerveDrive extends SubsystemBase {
         Orientation orientation = imu.getAngularOrientation();
         return (-orientation.firstAngle) % 360;
     }
-
+    //for it to not go to the side when spinning and driving
     private double getAdjustedHeading(double rotation) {
-        return getHeading() - rotationConpensation * rotation;
+        return getHeading() + rotationConpensation * rotation;
     }
 
     private void updateSwerveModules(double[][] wheelVectors) {
