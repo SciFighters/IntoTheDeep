@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.util.Range;
+
 public class Utils {
     public static class Unwrap{
         double lastAngle = 0;
@@ -25,8 +27,11 @@ public class Utils {
         if(delta > 180){
             delta = delta - 360;
         }else if(delta < -180){
-            delta = 360+ delta;
+            delta = 360 + delta;
         }
         return delta;
+    }
+    public static double map(double v, double minIn, double maxIn, double minOut, double maxOut){
+            return Range.clip(((v - minIn)/(maxIn - minIn) * (maxOut - minOut) + minOut), Math.min(minOut,maxOut),Math.max(minOut,maxOut));
     }
 }

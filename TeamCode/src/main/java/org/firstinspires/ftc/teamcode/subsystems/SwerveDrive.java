@@ -12,6 +12,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.Utils;
 
+import lombok.Getter;
+
 @Config
 public class SwerveDrive extends SubsystemBase {
     private final ElapsedTime runtime = new ElapsedTime();
@@ -32,6 +34,9 @@ public class SwerveDrive extends SubsystemBase {
     public static double kp = 0.02;
     public double[] position = {0,0};
     private final int ticksPerMeter = 1007;
+    public static double minAngleError = 5, maxAngleError = 90;
+
+    private double powerModifier;
     public SwerveDrive(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
 
         this.telemetry = telemetry;
@@ -59,14 +64,7 @@ public class SwerveDrive extends SubsystemBase {
     public void drive(double x, double y, double rotation, double _boost) {
         this.boost = _boost + 0.2;
         if (Math.hypot(x,y) < 0.05 && Math.abs(rotation) < 0.05){
-            fl.setPower(0);
-            fr.setPower(0);
-            bl.setPower(0);
-            br.setPower(0);
-            fl.update();
-            fr.update();
-            br.update();
-            bl.update();
+            idle();
             return;
         }
         if (Math.abs(rotation) < 0.04) {
@@ -96,14 +94,29 @@ public class SwerveDrive extends SubsystemBase {
         for (int i = 0; i < 4; i++) {
             wheelVectors[i] = cart2polar(wheelVectors[i]);
         }
+        double angleError = Math.max(Math.max(Math.abs(fl.getAngleError()),Math.abs(fr.getAngleError())),
+                                Math.max(Math.abs(bl.getAngleError()), Math.abs(br.getAngleError())));
+        powerModifier = Utils.map(angleError, minAngleError, maxAngleError, 1, 0);
         modulateSpeeds(wheelVectors);
         updateSwerveModules(wheelVectors);
-        telemetry.addData("kp", kp);
-//        telemetry();
+        updatePos();
+        telemetry.addData("power modifier", powerModifier);
+        telemetry.addData("maxAngleError", angleError);
+        telemetry.addData("posX", position[0]);
+        telemetry.addData("posY", position[1]);
+        telemetry.update();
+
     }
 
-    private void angleCorrection(double rotation) {
-
+    private void idle() {
+        fl.setPower(0);
+        fr.setPower(0);
+        bl.setPower(0);
+        br.setPower(0);
+        fl.update();
+        fr.update();
+        br.update();
+        bl.update();
     }
 
     private void telemetry() {
@@ -177,13 +190,13 @@ public class SwerveDrive extends SubsystemBase {
     private void updateSwerveModules(double[][] wheelVectors) {
 
         fl.setHeading(wheelVectors[0][1]);
-        fl.setPower(wheelVectors[0][0]);
+        fl.setPower(wheelVectors[0][0] * powerModifier);
         fr.setHeading(wheelVectors[1][1]);
-        fr.setPower(wheelVectors[1][0]);
+        fr.setPower(wheelVectors[1][0] * powerModifier);
         br.setHeading(wheelVectors[2][1]);
-        br.setPower(wheelVectors[2][0]);
+        br.setPower(wheelVectors[2][0] * powerModifier);
         bl.setHeading(wheelVectors[3][1]);
-        bl.setPower(wheelVectors[3][0]);
+        bl.setPower(wheelVectors[3][0] * powerModifier);
         fl.update();
         fr.update();
         br.update();
@@ -199,6 +212,13 @@ public class SwerveDrive extends SubsystemBase {
             }
         }
         return vectors;
+    }
+    private void updatePos(){
+        double posDiff = fl.getPositionDifference();
+        double angle = Math.toRadians(fl.getCurrentHeading());
+        position[0] += Math.sin(angle) * posDiff /(4 * ticksPerMeter);
+        position[1] += Math.cos(angle) * posDiff /(4 * ticksPerMeter);
+
     }
 
 

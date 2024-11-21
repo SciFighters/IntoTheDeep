@@ -1,9 +1,10 @@
 package org.firstinspires.ftc.teamcode.commands;
 
 import com.arcrobotics.ftclib.command.CommandBase;
-import com.qualcomm.robotcore.util.RobotLog;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.Utils;
 import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
 
 import java.util.function.Supplier;
@@ -34,6 +35,47 @@ public class SwerveCommands {
             telemetry.addData("Y", y.get());
             telemetry.addData("TURN", r.get());
             swerveDrive.drive(x.get(), y.get(), r.get(), boost.get()/2);
+        }
+    }
+    public static class GotoCmd extends CommandBase {
+        double x,y, wantedAngle;
+        double[] currentPos;
+        double boost;
+        double sensitivity;
+        double kp = 0.02;
+        SwerveDrive swerveDrive;
+        Telemetry telemetry;
+
+        public GotoCmd(Telemetry telemetry, SwerveDrive swerveDrive, double x, double y, double wantedAngle, double sensitivity, double boost) {
+            this.x = x;
+            this.y = y;
+            this.wantedAngle = wantedAngle;
+            this.boost = boost;
+            this.sensitivity = sensitivity;
+            this.swerveDrive = swerveDrive;
+            this.telemetry = telemetry;
+
+            addRequirements(swerveDrive);
+        }
+
+        @Override
+        public void execute() {
+            currentPos = swerveDrive.position;
+            double[] localVector = {x - currentPos[0],y - currentPos[1]};
+            double MovementAngle = Math.atan2(localVector[0], localVector[1]);
+            double length =  Range.clip(Math.hypot(localVector[0], localVector[1]),-1,1);
+            localVector[0] = Math.sin(MovementAngle * length);
+            localVector[1] = Math.cos(MovementAngle * length);
+            double angleDiff = Utils.calcDeltaAngle(wantedAngle, swerveDrive.getHeading()) * kp;
+            swerveDrive.drive(localVector[0], localVector[1], angleDiff,boost);
+        }
+
+        @Override
+        public boolean isFinished() {
+            if(Math.hypot(currentPos[0] - x, currentPos[1] - y) < sensitivity){
+                return true;
+            }
+            return false;
         }
     }
 }

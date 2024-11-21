@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-
 public enum SwerveWheels {
     //372 wide 344 other wide
     FL(Math.atan(326.0/296.0)),
