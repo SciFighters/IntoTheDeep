@@ -34,4 +34,5 @@ public class Utils {
     public static double map(double v, double minIn, double maxIn, double minOut, double maxOut){
             return Range.clip(((v - minIn)/(maxIn - minIn) * (maxOut - minOut) + minOut), Math.min(minOut,maxOut),Math.max(minOut,maxOut));
     }
+
 }

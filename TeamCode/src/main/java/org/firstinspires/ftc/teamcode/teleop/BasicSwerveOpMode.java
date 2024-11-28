@@ -30,7 +30,7 @@ public class BasicSwerveOpMode extends CommandOpMode {
     @Override
     public void initialize() {
         driverGamepad = new GamepadEx(gamepad1);
-        swerveDrive = new SwerveDrive(hardwareMap, multipleTelemetry);
+        swerveDrive = new SwerveDrive(hardwareMap, multipleTelemetry, this);
         register(swerveDrive);
 
 //        CommandScheduler.getInstance().setDefaultCommand(swerveDrive,new SwerveCommands.PowerCmd(telemetry, swerveDrive, driverGamepad::getLeftX, driverGamepad::getLeftY, driverGamepad::getRightX, () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER)));

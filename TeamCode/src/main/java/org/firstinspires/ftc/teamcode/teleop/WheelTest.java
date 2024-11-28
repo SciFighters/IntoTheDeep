@@ -64,7 +64,7 @@ public class WheelTest extends LinearOpMode {
 
             power = Utils.signRoot(power);
 
-            cr.setHeading(wantedAngle);
+            cr.setHeadingWithAngle(wantedAngle);
             cr.setPower(power);
 
             if(gamepad1.dpad_right){
@@ -74,7 +74,7 @@ public class WheelTest extends LinearOpMode {
             }
             else if(gamepad1.right_stick_button){
                 cr.servo.setPower(0);
-                cr.setHeading(0);
+                cr.setHeadingWithAngle(0);
                 cr.update();
             }
             else if (Math.pow(gamepad1.right_stick_y,2) + Math.pow(gamepad1.right_stick_x,2) <= 0.99){

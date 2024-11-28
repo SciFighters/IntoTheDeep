@@ -18,7 +18,8 @@ public class SwerveCommands {
         SwerveDrive swerveDrive;
         Telemetry telemetry;
 
-        public PowerCmd(Telemetry telemetry, SwerveDrive swerveDrive, Supplier<Double> x, Supplier<Double> y, Supplier<Double> r, Supplier<Double> boost) {
+        public PowerCmd(Telemetry telemetry, SwerveDrive swerveDrive, Supplier<Double> x,
+                        Supplier<Double> y, Supplier<Double> r, Supplier<Double> boost) {
             this.x = x;
             this.y = y;
             this.r = r;

@@ -24,7 +24,7 @@ public class SwerveModule {
         servo.zeroHeading();
     }
 
-    public void setHeading(double angle){
+    public void setHeadingWithAngle(double angle){
         double delta = servo.calcDeltaAngle(angle, servo.getCurrentAngle());
         if (Math.abs(delta) > 90) {
             angle = (angle + 180) % 360;
@@ -33,6 +33,19 @@ public class SwerveModule {
             isMotorFlipped = 1;
         }
         servo.setTargetAngle(angle);
+    }
+    public void setHeading(double angle, boolean angleOptimization){
+        if (angleOptimization) {
+            angle = (angle + 180) % 360;
+            isMotorFlipped = -1;
+        } else {
+            isMotorFlipped = 1;
+        }
+        servo.setTargetAngle(angle);
+    }
+
+    public double getDeltaAngle(double angle){
+        return Math.abs(Utils.calcDeltaAngle(angle, servo.getCurrentAngle()));
     }
     public double getAngleError(){ return Utils.calcDeltaAngle(servo.targetAngle , servo.currentAngle); }
     public void setServoPower(double power){
