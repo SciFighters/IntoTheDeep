@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Utils;
 import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
+import org.firstinspires.ftc.teamcode.teleop.DriveSubsystem;
 
 import java.util.function.Supplier;
 
@@ -15,10 +16,10 @@ public class SwerveCommands {
         Supplier<Double> y;
         Supplier<Double> r;
         Supplier<Double> boost;
-        SwerveDrive swerveDrive;
+        DriveSubsystem swerveDrive;
         Telemetry telemetry;
 
-        public PowerCmd(Telemetry telemetry, SwerveDrive swerveDrive, Supplier<Double> x,
+        public PowerCmd(Telemetry telemetry, DriveSubsystem swerveDrive, Supplier<Double> x,
                         Supplier<Double> y, Supplier<Double> r, Supplier<Double> boost) {
             this.x = x;
             this.y = y;
@@ -44,10 +45,10 @@ public class SwerveCommands {
         double boost;
         double sensitivity;
         double kp = 0.02;
-        SwerveDrive swerveDrive;
+        DriveSubsystem swerveDrive;
         Telemetry telemetry;
 
-        public GotoCmd(Telemetry telemetry, SwerveDrive swerveDrive, double x, double y, double wantedAngle, double sensitivity, double boost) {
+        public GotoCmd(Telemetry telemetry, DriveSubsystem swerveDrive, double x, double y, double wantedAngle, double sensitivity, double boost) {
             this.x = x;
             this.y = y;
             this.wantedAngle = wantedAngle;
@@ -61,7 +62,7 @@ public class SwerveCommands {
 
         @Override
         public void execute() {
-            currentPos = swerveDrive.position;
+            currentPos = swerveDrive.getPosition();
             double[] localVector = {x - currentPos[0],y - currentPos[1]};
             double MovementAngle = Math.atan2(localVector[0], localVector[1]);
             double length =  Range.clip(Math.hypot(localVector[0], localVector[1]),-1,1);

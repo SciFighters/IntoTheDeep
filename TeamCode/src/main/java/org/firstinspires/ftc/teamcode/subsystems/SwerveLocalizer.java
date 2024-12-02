@@ -73,10 +73,8 @@ public class SwerveLocalizer implements Localizer {
                     ? Angle.normDelta(extHeading - lastExtHeading)
                     : robotPoseDelta.getHeading();
 
-            _poseEstimate = Kinematics.relativeOdometryUpdate(
-                    _poseEstimate,
-                    new Pose2d(robotPoseDelta.vec(), finalHeadingDelta)
-            );
+            _poseEstimate = Kinematics.relativeOdometryUpdate( _poseEstimate,
+                                                                new Pose2d(robotPoseDelta.vec(), finalHeadingDelta));
         }
 
         List<Double> wheelVelocities = drive.getWheelVelocities();

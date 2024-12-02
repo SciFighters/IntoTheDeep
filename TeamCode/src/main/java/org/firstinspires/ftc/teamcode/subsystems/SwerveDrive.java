@@ -19,6 +19,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.ImuIntegrator;
 import org.firstinspires.ftc.teamcode.Utils;
 import org.opencv.core.Point;
@@ -51,6 +52,7 @@ public class SwerveDrive extends Drive {
     //    public double[] position = {0, 0};
     private final int ticksPerMeter = 1007;
     public static double minAngleError = 5, maxAngleError = 90;
+    public SwerveLocalizer localizer;
 
     private double powerModifier;
 
@@ -70,6 +72,8 @@ public class SwerveDrive extends Drive {
         fr = new SwerveModule(hardwareMap.get(DcMotor.class, "fr_motor"),
                 hardwareMap.get(CRServo.class, "fr_servo"),
                 hardwareMap.analogInput.get("fr_encoder"), 346.9);
+
+        localizer = new SwerveLocalizer(this);
 
         initImu(hardwareMap, telemetry, opMode);
     }
@@ -221,6 +225,12 @@ public class SwerveDrive extends Drive {
         return (-orientation.firstAngle) % 360;
     }
 
+    public double[] getPosition() {
+        Position pos =  imu.getPosition();
+        double [] array = {pos.x, pos.y};
+        return array;
+    }
+
     //for it to not go to the side when spinning and driving
     private double getAdjustedHeading(double rotation) {
         return getHeading() + rotationConpensation * rotation;
@@ -286,31 +296,38 @@ public class SwerveDrive extends Drive {
         return position;
     }
 
+    public void update() {
+        // TODO: calc wheel velocity
 
+        localizer.update();
+    }
+
+    // ###################################### Roadrunner implementation #####################################
     @NonNull
     @Override
     public Localizer getLocalizer() {
-        return null;
+        return localizer;
     }
 
     @Override
     public void setLocalizer(@NonNull Localizer localizer) {
-
+        assert false;
     }
 
     @Override
     protected double getRawExternalHeading() {
-        return 0;
+        return imu.getAngularOrientation().firstAngle;
     }
 
     @Override
     public void setDrivePower(@NonNull Pose2d pose2d) {
-
+        double angle = -Math.toDegrees(pose2d.getHeading());
+        drive(pose2d.getX(), pose2d.getY(), angle ,1);
     }
 
     @Override
     public void setDriveSignal(@NonNull DriveSignal driveSignal) {
-
+        // TODO: understand and implement
     }
 
     public List<Double> getWheelPositions() {
@@ -318,18 +335,24 @@ public class SwerveDrive extends Drive {
     }
 
     public List<Double> getModuleOrientations() {
-        return new ArrayList<>(Arrays.asList(fl.getCurrentHeading(), bl.getCurrentHeading(), fr.getCurrentHeading(), br.getCurrentHeading()));
+        return new ArrayList<>(Arrays.asList(
+                Math.toRadians(-fl.getCurrentHeading()),
+                Math.toRadians(-bl.getCurrentHeading()),
+                Math.toRadians(-fr.getCurrentHeading()),
+                Math.toRadians(-br.getCurrentHeading())));
     }
 
     public List<Double> getWheelVelocities() {
+        // TODO: understand and implement
+
         return null;
     }
 
     public double getWheelBase() {
-        return 16;
+        return 12.8346456693;
     }
 
     public double getTrackWidth() {
-        return 16;
+        return 11.6535433071;
     }
 }
