@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Config
-public class SwerveDrive extends Drive {
+public class SwerveDrive extends SubsystemBase {
     private final ElapsedTime runtime = new ElapsedTime();
     //    SwerveDriveKinematics kinematics = new SwerveDriveKinematics();
 //    SwerveDriveOdometry poseEstimator = new SwerveDriveOdometry();
@@ -296,63 +296,63 @@ public class SwerveDrive extends Drive {
         return position;
     }
 
-    public void update() {
-        // TODO: calc wheel velocity
-
-        localizer.update();
-    }
-
-    // ###################################### Roadrunner implementation #####################################
-    @NonNull
-    @Override
-    public Localizer getLocalizer() {
-        return localizer;
-    }
-
-    @Override
-    public void setLocalizer(@NonNull Localizer localizer) {
-        assert false;
-    }
-
-    @Override
-    protected double getRawExternalHeading() {
-        return imu.getAngularOrientation().firstAngle;
-    }
-
-    @Override
-    public void setDrivePower(@NonNull Pose2d pose2d) {
-        double angle = -Math.toDegrees(pose2d.getHeading());
-        drive(pose2d.getX(), pose2d.getY(), angle ,1);
-    }
-
-    @Override
-    public void setDriveSignal(@NonNull DriveSignal driveSignal) {
-        // TODO: understand and implement
-    }
-
-    public List<Double> getWheelPositions() {
-        return new ArrayList<>(Arrays.asList(fl.getPosition(), bl.getPosition(), fr.getPosition(), br.getPosition()));
-    }
-
-    public List<Double> getModuleOrientations() {
-        return new ArrayList<>(Arrays.asList(
-                Math.toRadians(-fl.getCurrentHeading()),
-                Math.toRadians(-bl.getCurrentHeading()),
-                Math.toRadians(-fr.getCurrentHeading()),
-                Math.toRadians(-br.getCurrentHeading())));
-    }
-
-    public List<Double> getWheelVelocities() {
-        // TODO: understand and implement
-
-        return null;
-    }
-
-    public double getWheelBase() {
-        return 12.8346456693;
-    }
-
-    public double getTrackWidth() {
-        return 11.6535433071;
-    }
+//    public void update() {
+//        // TODO: calc wheel velocity
+//
+//        localizer.update();
+//    }
+//
+//    // ###################################### Roadrunner implementation #####################################
+//    @NonNull
+//    @Override
+//    public Localizer getLocalizer() {
+//        return localizer;
+//    }
+//
+//    @Override
+//    public void setLocalizer(@NonNull Localizer localizer) {
+//        assert false;
+//    }
+//
+//    @Override
+//    protected double getRawExternalHeading() {
+//        return imu.getAngularOrientation().firstAngle;
+//    }
+//
+//    @Override
+//    public void setDrivePower(@NonNull Pose2d pose2d) {
+//        double angle = -Math.toDegrees(pose2d.getHeading());
+//        drive(pose2d.getX(), pose2d.getY(), angle ,1);
+//    }
+//
+//    @Override
+//    public void setDriveSignal(@NonNull DriveSignal driveSignal) {
+//        // TODO: understand and implement
+//    }
+//
+//    public List<Double> getWheelPositions() {
+//        return new ArrayList<>(Arrays.asList(fl.getPosition(), bl.getPosition(), fr.getPosition(), br.getPosition()));
+//    }
+//
+//    public List<Double> getModuleOrientations() {
+//        return new ArrayList<>(Arrays.asList(
+//                Math.toRadians(-fl.getCurrentHeading()),
+//                Math.toRadians(-bl.getCurrentHeading()),
+//                Math.toRadians(-fr.getCurrentHeading()),
+//                Math.toRadians(-br.getCurrentHeading())));
+//    }
+//
+//    public List<Double> getWheelVelocities() {
+//        // TODO: understand and implement
+//
+//        return null;
+//    }
+//
+//    public double getWheelBase() {
+//        return 12.8346456693;
+//    }
+//
+//    public double getTrackWidth() {
+//        return 11.6535433071;
+//    }
 }

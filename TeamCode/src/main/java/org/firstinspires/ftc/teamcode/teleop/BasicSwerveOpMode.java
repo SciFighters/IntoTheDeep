@@ -21,7 +21,7 @@ import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
 @TeleOp(group = "swerve")
 public class BasicSwerveOpMode extends CommandOpMode {
     private ElapsedTime runtime = new ElapsedTime();
-    private DriveSubsystem swerveDrive;
+    private SwerveDrive swerveDrive;
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
     MultipleTelemetry multipleTelemetry = new MultipleTelemetry(telemetry, dashboardTelemetry);
@@ -30,7 +30,7 @@ public class BasicSwerveOpMode extends CommandOpMode {
     @Override
     public void initialize() {
         driverGamepad = new GamepadEx(gamepad1);
-        swerveDrive = new DriveSubsystem(hardwareMap, multipleTelemetry, this);
+        swerveDrive = new SwerveDrive(hardwareMap, multipleTelemetry, this);
         register(swerveDrive);
 
 //        CommandScheduler.getInstance().setDefaultCommand(swerveDrive,new SwerveCommands.PowerCmd(telemetry, swerveDrive, driverGamepad::getLeftX, driverGamepad::getLeftY, driverGamepad::getRightX, () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER)));

@@ -16,10 +16,10 @@ public class SwerveCommands {
         Supplier<Double> y;
         Supplier<Double> r;
         Supplier<Double> boost;
-        DriveSubsystem swerveDrive;
+        SwerveDrive swerveDrive;
         Telemetry telemetry;
 
-        public PowerCmd(Telemetry telemetry, DriveSubsystem swerveDrive, Supplier<Double> x,
+        public PowerCmd(Telemetry telemetry, SwerveDrive swerveDrive, Supplier<Double> x,
                         Supplier<Double> y, Supplier<Double> r, Supplier<Double> boost) {
             this.x = x;
             this.y = y;
@@ -45,10 +45,10 @@ public class SwerveCommands {
         double boost;
         double sensitivity;
         double kp = 0.02;
-        DriveSubsystem swerveDrive;
+        SwerveDrive swerveDrive;
         Telemetry telemetry;
 
-        public GotoCmd(Telemetry telemetry, DriveSubsystem swerveDrive, double x, double y, double wantedAngle, double sensitivity, double boost) {
+        public GotoCmd(Telemetry telemetry, SwerveDrive swerveDrive, double x, double y, double wantedAngle, double sensitivity, double boost) {
             this.x = x;
             this.y = y;
             this.wantedAngle = wantedAngle;

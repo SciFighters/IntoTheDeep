@@ -26,7 +26,7 @@ public class DischargeSubsystem extends SubsystemBase {
     }
 
     public void setPower(double power) {
-        if (motor1.getCurrentPosition() <= 0 || motor2.getCurrentPosition() >= 0) {
+        if (motor1.getCurrentPosition() <= 0 || motor2.getCurrentPosition() <= 0) {
             motor1.setPower((Range.clip(power, 0, 1)));
             motor2.setPower((Range.clip(power, 0, 1)));
         } else {
@@ -34,16 +34,20 @@ public class DischargeSubsystem extends SubsystemBase {
             motor2.setPower(power);
         }
     }
-    public void climbMode(){
+
+    public void climbMode() {
         gearBoxServo.setPosition(servoClimbPos);
     }
-    public void dischargeMode(){
+
+    public void dischargeMode() {
         gearBoxServo.setPosition(servoDischargePos);
     }
-    public void holdSample(){
+
+    public void holdSample() {
         clawServo.setPosition(clawServoHoldPos);
     }
-    public void releaseSample(){
+
+    public void releaseSample() {
         clawServo.setPosition(clawServoReleasePos);
     }
 
