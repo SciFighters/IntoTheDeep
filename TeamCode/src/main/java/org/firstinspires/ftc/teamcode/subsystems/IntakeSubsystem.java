@@ -38,17 +38,32 @@ public class IntakeSubsystem extends SubsystemBase {
             motor.setPower(power);
         }
     }
-    public void setZServoPosition(double position){
+
+    public void setZServoPosition(double position) {
         zServo.setPosition(position);
     }
-    public void setXServoPosition(double position){
+
+    public void setXServoPosition(double position) {
         xServo.setPosition(position);
     }
-    public void setGripStage(GripStages stage){
+
+    public void setGripStage(GripStages stage) {
         gripServo.setPosition(stage.POSITION);
     }
-    public void setSpinPower(double power){
+    public double getGripServoPosition(){
+        return gripServo.getPosition();
+    }
+
+    public void setSpinPower(double power) {
         spinServo.setPower(power);
+    }
+
+    public int getMotorPosition() {
+        return motor.getCurrentPosition();
+    }
+
+    public double getXServoPosition() {
+        return xServo.getPosition();
     }
     // make second button that while pressing it it goes to half of height and pushes things
     // away and then lowers one more stage and picks up the sample

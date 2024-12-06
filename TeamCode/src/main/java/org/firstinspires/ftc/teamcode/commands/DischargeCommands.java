@@ -9,20 +9,43 @@ import java.util.function.Supplier;
 public class DischargeCommands{
 
     public static class DischargePowerCmd extends CommandBase{
-        Supplier<Double> upPower, downPower;
+        Supplier<Double> upPower;
         DischargeSubsystem dischargeSubsystem;
-//        , Supplier<Double> downPower
         public DischargePowerCmd(Supplier<Double> upPower, DischargeSubsystem dischargeSubsystem){
             this.upPower = upPower;
-            this.downPower = downPower;
             this.dischargeSubsystem = dischargeSubsystem;
             addRequirements(dischargeSubsystem);
         }
 
         @Override
+        public void initialize() {
+            dischargeSubsystem.resetEncoders();
+        }
+
+        @Override
         public void execute() {
-            dischargeSubsystem.setPower((upPower.get()-downPower.get())/5);
+            dischargeSubsystem.setPower((upPower.get()));
         }
     }
+    public static class GearBoxSwapCmd extends CommandBase{
+        DischargeSubsystem dischargeSubsystem;
+        public GearBoxSwapCmd(DischargeSubsystem dischargeSubsystem){
+            this.dischargeSubsystem = dischargeSubsystem;
+            addRequirements(dischargeSubsystem);
+        }
 
+        @Override
+        public void initialize() {
+            if(dischargeSubsystem.getGearBoxRatio() == 1){
+                dischargeSubsystem.climbMode();
+            } else{
+                dischargeSubsystem.dischargeMode();
+            }
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
 }

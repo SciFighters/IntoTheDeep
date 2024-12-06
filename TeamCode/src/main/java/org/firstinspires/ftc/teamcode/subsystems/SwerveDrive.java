@@ -52,7 +52,7 @@ public class SwerveDrive extends SubsystemBase {
     //    public double[] position = {0, 0};
     private final int ticksPerMeter = 1007;
     public static double minAngleError = 5, maxAngleError = 90;
-    public SwerveLocalizer localizer;
+
 
     private double powerModifier;
 
@@ -72,8 +72,6 @@ public class SwerveDrive extends SubsystemBase {
         fr = new SwerveModule(hardwareMap.get(DcMotor.class, "fr_motor"),
                 hardwareMap.get(CRServo.class, "fr_servo"),
                 hardwareMap.analogInput.get("fr_encoder"), 346.9);
-
-        localizer = new SwerveLocalizer(this);
 
         initImu(hardwareMap, telemetry, opMode);
     }
