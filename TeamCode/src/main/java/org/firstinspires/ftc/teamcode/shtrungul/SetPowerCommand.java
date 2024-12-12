@@ -6,9 +6,9 @@ import java.util.function.Supplier;
 
 public class SetPowerCommand extends CommandBase {
     SampleSubsystem sub;
-    Supplier<Double> _powerSupplier;
+    double _powerSupplier;
 
-    public SetPowerCommand(SampleSubsystem subsystem, Supplier<Double> powerSupplier) {
+    public SetPowerCommand(SampleSubsystem subsystem, double powerSupplier) {
         this.sub = subsystem;
         this._powerSupplier = powerSupplier;
         addRequirements(sub);
@@ -16,7 +16,7 @@ public class SetPowerCommand extends CommandBase {
 
     @Override
     public void execute() {
-        this.sub.setPower(_powerSupplier.get());
+        this.sub.setPower(_powerSupplier);
     }
 
     @Override

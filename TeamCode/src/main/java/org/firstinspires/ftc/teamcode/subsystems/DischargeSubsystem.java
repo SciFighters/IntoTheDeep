@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.util.Range;
 
 public class DischargeSubsystem extends SubsystemBase {
     private final DcMotor motor1, motor2;
-    private final Servo gearBoxServo;
+    private final Servo gearBoxServo, clawServo;
     double servoDischargePos = 0, servoClimbPos = 1;
     double clawServoHoldPos = 0.1, clawServoReleasePos = 0;
     MultipleTelemetry telemetry;
@@ -20,8 +20,9 @@ public class DischargeSubsystem extends SubsystemBase {
         motor1 = hardwareMap.dcMotor.get("dischargeMotor1");
         motor2 = hardwareMap.dcMotor.get("dischargeMotor2");
         gearBoxServo = hardwareMap.servo.get("gearBoxServo");
-//        clawServo = hardwareMap.servo.get("dischargeServo");
+        clawServo = hardwareMap.servo.get("dischargeServo");
         motor1.setDirection(DcMotorSimple.Direction.REVERSE);
+        resetEncoders();
 
         this.telemetry = telemetry;
     }
@@ -64,12 +65,24 @@ public class DischargeSubsystem extends SubsystemBase {
         motor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-//    public void holdSample() {
-//        clawServo.setPosition(clawServoHoldPos);
-//    }
-//
-//    public void releaseSample() {
-//        clawServo.setPosition(clawServoReleasePos);
-//    }
+    public void setPosition(int pos){
+        motor1.setTargetPosition(pos);
+        motor2.setTargetPosition(pos);
+        motor1.setPower(0.5);
+        motor2.setPower(0.5);
+        motor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+    public double getPosition(){
+        return motor1.getCurrentPosition();
+    }
+
+    public void holdSample() {
+        clawServo.setPosition(clawServoHoldPos);
+    }
+
+    public void releaseSample() {
+        clawServo.setPosition(clawServoReleasePos);
+    }
 
 }
