@@ -9,16 +9,16 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class ServoProgrammer extends LinearOpMode {
     Servo servo;
     double position = 0;
-
+    //0.39 close 0.74 open
     @Override
     public void runOpMode() throws InterruptedException {
         servo = hardwareMap.get(Servo.class, "servo");
         waitForStart();
         while (opModeIsActive() && !isStopRequested()) {
             if (gamepad1.dpad_up) {
-                position += 0.01;
+                position += 0.001;
             } else if (gamepad1.dpad_down) {
-                position -= 0.01;
+                position -= 0.001;
             }
             servo.setPosition(position);
             telemetry.addData("pos",position);

@@ -5,8 +5,10 @@ import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.GripStages;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.XRotationStages;
 
 public class IntakeCommands {
     public static class IntakeGotoCmd extends CommandBase {
@@ -27,8 +29,8 @@ public class IntakeCommands {
         }
 
         @Override
-        public void execute() {
-            subsystem.setArmPower((position - subsystem.getMotorPosition()) * kp);
+        public void initialize() {
+            subsystem.armGoToPos(position);
         }
 
         @Override
@@ -42,57 +44,35 @@ public class IntakeCommands {
         }
     }
 
-
-    public static class LowerXRotationCmd extends CommandBase {
+    public static class SetXRotationCmd extends CommandBase {
         IntakeSubsystem subsystem;
+        XRotationStages stage;
 
-        public LowerXRotationCmd(IntakeSubsystem subsystem) {
+        public SetXRotationCmd(IntakeSubsystem subsystem, XRotationStages stage) {
+            this.stage = stage;
             this.subsystem = subsystem;
             addRequirements(subsystem);
         }
 
         @Override
         public void initialize() {
-            subsystem.setXServoPosition(1);
+            subsystem.setXServoPosition(stage.POSITION);
         }
 
         @Override
         public boolean isFinished() {
-            return subsystem.getXServoPosition() >= 0.98;
+            return Math.abs(subsystem.getXServoPosition() - stage.POSITION) <= 0.02;
         }
-
-
-    }
-
-    public static class UpperXRotationCmd extends CommandBase {
-        IntakeSubsystem subsystem;
-
-        public UpperXRotationCmd(IntakeSubsystem subsystem) {
-            this.subsystem = subsystem;
-            addRequirements(subsystem);
-        }
-
-        @Override
-        public void initialize() {
-            subsystem.setXServoPosition(0);
-        }
-
-        @Override
-        public boolean isFinished() {
-            return subsystem.getXServoPosition() <= 0.02;
-        }
-
-
     }
 
     public static class SetGripStageCmd extends CommandBase {
         IntakeSubsystem subsystem;
         GripStages gripStage;
 
-        public SetGripStageCmd(GripStages gripStage, IntakeSubsystem subsystem) {
+        public SetGripStageCmd(IntakeSubsystem subsystem, GripStages gripStage) {
             this.subsystem = subsystem;
             this.gripStage = gripStage;
-            addRequirements(subsystem);
+//            addRequirements(subsystem);
         }
 
         @Override
@@ -180,9 +160,15 @@ public class IntakeCommands {
             intakeSubsystem.setSpinPower(0);
         }
     }
-//    public static class ResetIntakeCmd extends SequentialCommandGroup{
-//        public ResetIntakeCmd(IntakeSubsystem intakeSubsystem){
-//            addCommands(new ParallelCommandGroup(new SetZRotationCmd(intakeSubsystem)));
-//        }
-//    }
+    public static class StartIntake extends SequentialCommandGroup{
+        private final int pos = 500;
+        public StartIntake(IntakeSubsystem subsystem){
+            addCommands(new IntakeGotoCmd(subsystem,pos),
+                    new SetXRotationCmd(subsystem,XRotationStages.MIDDLE),
+                    new ParallelCommandGroup(new SetGripStageCmd(subsystem, GripStages.MIDDLE),
+                            new SetXRotationCmd(subsystem,XRotationStages.LOWER)));
+            addRequirements(subsystem);
+        }
+
+    }
 }

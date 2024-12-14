@@ -28,28 +28,31 @@ public class DischargeCommands {
 
         @Override
         public void execute() {
-//            dischargeSubsystem.setPower((upPower.get()));
+            dischargeSubsystem.setPower((upPower.get()));
         }
     }
 
     public static class DischargeGotoCmd extends CommandBase {
         DischargeSubsystem dischargeSubsystem;
-        private final int pos, sensitivity;
         Telemetry telemetry;
+        private final int pos, sensitivity;
+        private final double kp = 0.01;
+
+
         public DischargeGotoCmd(DischargeSubsystem dischargeSubsystem, int pos, int sensitivity, Telemetry telemetry) {
             this.dischargeSubsystem = dischargeSubsystem;
             this.pos = pos;
             this.sensitivity = sensitivity;
-            addRequirements(dischargeSubsystem);
             this.telemetry = telemetry;
+            addRequirements(dischargeSubsystem);
+
         }
 
         @Override
-        public void initialize() {
-            telemetry.addData("onCommand","yes");
+        public void execute() {
+            dischargeSubsystem.setPower(kp * (pos - dischargeSubsystem.getPosition2()));
+            telemetry.addData("power", kp * (pos - dischargeSubsystem.getPosition2()));
             telemetry.update();
-            dischargeSubsystem.setPosition(pos);
-//            dischargeSubsystem.setPower(0.5);
         }
 
         @Override
@@ -68,13 +71,13 @@ public class DischargeCommands {
 
         @Override
         public void initialize() {
-//            dischargeSubsystem.holdSample();
+            dischargeSubsystem.holdSample();
         }
 
-//        @Override
-//        public boolean isFinished() {
-//            return dischargeSubsystem.getClawServoPos() < 0.05;
-//        }
+        @Override
+        public boolean isFinished() {
+            return dischargeSubsystem.getClawServoPosition() <= 0.41;
+        }
     }
 
     public static class DischargeReleaseCmd extends CommandBase {
@@ -85,15 +88,15 @@ public class DischargeCommands {
             addRequirements(dischargeSubsystem);
         }
 
-//        @Override
-//        public void initialize() {
-//            dischargeSubsystem.releaseSample();
-//        }
+        @Override
+        public void initialize() {
+            dischargeSubsystem.releaseSample();
+        }
 
-//        @Override
-//        public boolean isFinished() {
-//            return dischargeSubsystem.getClawServoPos() > 0.45;
-//        }
+        @Override
+        public boolean isFinished() {
+            return dischargeSubsystem.getClawServoPosition() >= 0.71;
+        }
     }
 
     public static class GearBoxSwapCmd extends CommandBase {
@@ -117,15 +120,6 @@ public class DischargeCommands {
         public boolean isFinished() {
             return true;
         }
-    }
-
-    public static class HighBasketDischargeCmd extends SequentialCommandGroup {
-//        public HighBasketDischargeCmd(DischargeSubsystem dischargeSubsystem) {
-//            addCommands(new DischargeGotoCmd(dischargeSubsystem, 600, 5),
-//                    new DischargeReleaseCmd(dischargeSubsystem),
-//                    new DischargeGotoCmd(dischargeSubsystem, 0, 5));
-//            addRequirements(dischargeSubsystem);
-//        }
     }
 
 }

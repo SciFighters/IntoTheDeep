@@ -31,22 +31,24 @@ public class BasicDischargeTest extends CommandOpMode {
         dischargeSubsystem = new DischargeSubsystem(hardwareMap, multipleTelemetry);
         register(dischargeSubsystem);
         Button dPadUp = new GamepadButton(systemGamepad, GamepadKeys.Button.DPAD_UP);
-        dPadUp.whenPressed(new DischargeGotoCmd(dischargeSubsystem,1000,10,telemetry));
         Button dPadDown = new GamepadButton(systemGamepad,GamepadKeys.Button.DPAD_DOWN);
-        dPadDown.whenPressed(new DischargeGotoCmd(dischargeSubsystem,300,10,telemetry));
         Button dPadRight = new GamepadButton(systemGamepad, GamepadKeys.Button.DPAD_RIGHT);
+        Button dPadLeft = new GamepadButton(systemGamepad,GamepadKeys.Button.DPAD_LEFT);
+
+        dPadUp.whenPressed(new DischargeGotoCmd(dischargeSubsystem,1000,10, telemetry));
+        dPadDown.whenPressed(new DischargeGotoCmd(dischargeSubsystem,100,10, telemetry));
         dPadRight.whenPressed(new DischargeReleaseCmd(dischargeSubsystem));
-        Button dPadLeft = new GamepadButton(systemGamepad,GamepadKeys.Button.DPAD_DOWN);
         dPadLeft.whenPressed(new DischargeHoldCmd(dischargeSubsystem));
 
     }
 
     @Override
     public void run() {
-//        dischargeSubsystem.setPosition(400);
         super.run();
 
         telemetry.addData("pos",dischargeSubsystem.getPosition());
+        telemetry.addData("pos2", dischargeSubsystem.getPosition2());
+
         telemetry.update();
     }
 }

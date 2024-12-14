@@ -9,12 +9,11 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.Supplier;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.shtrungul.SetPowerCommand;
-import org.firstinspires.ftc.teamcode.shtrungul.SampleSubsystem;
+import org.firstinspires.ftc.teamcode.DanEg.SetPowerCommand;
+import org.firstinspires.ftc.teamcode.DanEg.SampleSubsystem;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands.DischargePowerCmd;
-import org.firstinspires.ftc.teamcode.commands.DischargeCommands.DischargeGotoCmd;
+
 @TeleOp
 public class WhenPressedTest extends CommandOpMode {
     GamepadEx systemGamepad;

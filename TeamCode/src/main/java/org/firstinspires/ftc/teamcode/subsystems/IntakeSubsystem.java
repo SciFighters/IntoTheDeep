@@ -19,8 +19,6 @@ public class IntakeSubsystem extends SubsystemBase {
     private final CRServo spinServo;
     private final int maxArmLength = 857;
     MultipleTelemetry telemetry;
-
-    //[][][][][][][][][][]
     public IntakeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
         motor1 = hardwareMap.dcMotor.get("intakeMotor1");
         motor2 = hardwareMap.dcMotor.get("intakeMotor2");

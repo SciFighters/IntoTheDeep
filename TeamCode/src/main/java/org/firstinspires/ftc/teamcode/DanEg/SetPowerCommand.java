@@ -1,8 +1,6 @@
-package org.firstinspires.ftc.teamcode.shtrungul;
+package org.firstinspires.ftc.teamcode.DanEg;
 
 import com.arcrobotics.ftclib.command.CommandBase;
-
-import java.util.function.Supplier;
 
 public class SetPowerCommand extends CommandBase {
     SampleSubsystem sub;
