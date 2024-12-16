@@ -4,9 +4,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
+
 @TeleOp
-public class klfsdfjkldsfjkl extends LinearOpMode {
+public class ElevatorTestThingy extends LinearOpMode {
     DcMotorEx motor1;
     DcMotorEx motor2;
     double position = 0;
@@ -14,14 +14,14 @@ public class klfsdfjkldsfjkl extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         motor1 = hardwareMap.get(DcMotorEx.class, "dischargeMotor1");
-        motor2 = hardwareMap.get(DcMotorEx.class, "dischargeMotor2");
+//        motor2 = hardwareMap.get(DcMotorEx.class, "dischargeMotor2");
         motor1.setDirection(DcMotorSimple.Direction.REVERSE);
         waitForStart();
         while (opModeIsActive() && !isStopRequested()) {
             motor1.setPower(-0.8);
-            motor2.setPower(-0.8);
+//            motor2.setPower(-0.8);
             telemetry.addData("pos",motor1.getCurrentPosition());
-            telemetry.addData("pos",motor1.getCurrentPosition());
+//            telemetry.addData("pos",motor1.getCurrentPosition());
             telemetry.update();
         }
     }
