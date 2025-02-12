@@ -12,7 +12,8 @@ public class LimelightSubsystem extends SubsystemBase {
     LLResult result;
     final double limelightH = 0, sampleH = 3.8, limelightAngle = 30.5;
     double distance;
-    public final double middleOfScreen = 300, ticksPerCM = 0, distanceFromArmStart = 0;
+    public final double ticksPerCM = 0, distanceFromArmStart = 0;
+    public double alignedY, alignedAngle;
 
     public LimelightSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
         this.telemetry = telemetry;

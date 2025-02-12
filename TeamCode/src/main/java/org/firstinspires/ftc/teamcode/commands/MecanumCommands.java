@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.commands;
 
 import com.arcrobotics.ftclib.command.CommandBase;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -17,10 +16,6 @@ public class MecanumCommands {
             addRequirements(mecanumDrive);
         }
 
-        @Override
-        public boolean isFinished() {
-            return false;
-        }
     }
 
     public static class PowerCmd extends CommandBase {
@@ -76,7 +71,7 @@ public class MecanumCommands {
         MecanumDrive mecanumDrive;
         Telemetry telemetry;
         boolean noRotation = false;
-        double minPower = 0.2;
+        double minPower = 0.2;//todo: change to the actual min to move
 
         public GotoCmd(Telemetry telemetry, MecanumDrive mecanumDrive, double x, double y,
                        double wantedAngle, double sensitivity, double wantedDistance, double boost) {
@@ -334,8 +329,8 @@ public class MecanumCommands {
 
     public static class SetRotationCmd extends CommandBase {
         double wantedHeading;
-        double error = 0, lastError = 0, proportional, lastTime = 0, Integral, derivative;
-        public static double kp = 0.01, ki = 0.0005, kd = -0.006;//0.025
+        double Integral, derivative;
+        public static double kp = 0.01;//0.025
         MecanumDrive mecanumDrive;
 
         public SetRotationCmd(MecanumDrive mecanumDrive, double wantedHeading) {
@@ -366,10 +361,6 @@ public class MecanumCommands {
             mecanumDrive.drive(0, 0, Utils.calcDeltaAngle(wantedHeading + 180, mecanumDrive.getAdjustedHeading()) * kp, 0.5);
         }
 
-        @Override
-        public boolean isFinished() {
-            return false;
-        }
 
         @Override
         public void end(boolean interrupted) {
@@ -378,31 +369,6 @@ public class MecanumCommands {
         }
     }
 
-    public static class MoveSideToSideCmd extends CommandBase {
-        MecanumDrive mecanumDrive;
-        ElapsedTime time = new ElapsedTime();
-
-        public MoveSideToSideCmd(MecanumDrive mecanumDrive) {
-            this.mecanumDrive = mecanumDrive;
-        }
-
-        @Override
-        public void initialize() {
-            time.reset();
-        }
-
-        @Override
-        public void execute() {
-
-        }
-
-        @Override
-        public void end(boolean interrupted) {
-            mecanumDrive.extraX = 0;
-            mecanumDrive.extraY = 0;
-            mecanumDrive.extraR = 0;
-        }
-    }
 
     public static class MoverServoCmd extends CommandBase {
         MecanumDrive mecanumDrive;

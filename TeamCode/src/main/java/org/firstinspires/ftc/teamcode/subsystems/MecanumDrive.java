@@ -2,12 +2,10 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.SubsystemBase;
-import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.arcrobotics.ftclib.kinematics.wpilibkinematics.ChassisSpeeds;
 import com.arcrobotics.ftclib.kinematics.wpilibkinematics.MecanumDriveKinematics;
-import com.arcrobotics.ftclib.kinematics.wpilibkinematics.MecanumDriveOdometry;
 import com.arcrobotics.ftclib.kinematics.wpilibkinematics.MecanumDriveWheelSpeeds;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -33,18 +31,14 @@ public class MecanumDrive extends SubsystemBase {
     DistanceSensor distanceSensor;
     MecanumDriveKinematics kinematics;
     BNO055IMU imu;
-    MecanumDriveWheelSpeeds wheelSpeeds;
     private final BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
     //bl = intakeOdometer, br = nonParallel, fr = dischargeOdometer
     ElapsedTime time = new ElapsedTime();
-    Pose2d pos;
     double correctedHeading;
     boolean isFieldOriented = true;
 
     MultipleTelemetry telemetry;
     Point startingPosition;
-    double forwardTicksPerMeter = 1817, strafeTicksPerMeter = 2048;
-    double tickPerMeter = 1783;
     LinearOpMode opMode;
     double startAngle = 0;
     public double extraX = 0, extraY = 0, extraR = 0;
@@ -235,9 +229,7 @@ public class MecanumDrive extends SubsystemBase {
         this.isFieldOriented = fieldOriented;
     }
 
-    public double getDistance() {
-        return distanceSensor.getDistance(DistanceUnit.CM);
-    }
+
 
     public double[] modulateSpeeds(double[] speeds) {
         double max = Math.max(Math.max(Math.abs(speeds[0]), Math.abs(speeds[1])), Math.max(Math.abs(speeds[2]), Math.abs(speeds[3])));

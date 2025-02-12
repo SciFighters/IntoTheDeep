@@ -2,8 +2,7 @@ package org.firstinspires.ftc.teamcode.commands;
 
 import com.arcrobotics.ftclib.command.CommandBase;
 
-import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
-import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
+
 import org.firstinspires.ftc.teamcode.subsystems.RobotState;
 import org.firstinspires.ftc.teamcode.teleop.Echo;
 

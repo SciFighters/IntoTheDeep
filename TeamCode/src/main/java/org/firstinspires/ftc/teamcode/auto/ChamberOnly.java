@@ -11,7 +11,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
-import org.firstinspires.ftc.teamcode.commands.IntakeCommands;
 import org.firstinspires.ftc.teamcode.commands.MecanumCommands;
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
@@ -26,7 +25,6 @@ public class ChamberOnly extends CommandOpMode {
     MecanumDrive mecanumDrive;
     DischargeSubsystem dischargeSubsystem;
     IntakeSubsystem intakeSubsystem;
-    Point pos = new Point(0, 0);
 
     @Override
     public void initialize() {
@@ -44,20 +42,18 @@ public class ChamberOnly extends CommandOpMode {
 
         schedule(new SequentialCommandGroup(
                 new ParallelCommandGroup(
-                        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.8, 0.955, 0, 0.05, 1)),
-//                        new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry)),
+                        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.8, 0.955, 0, 0.05, 1),
+                        new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry)),
+                new WaitCommand(300),
+                new ParallelCommandGroup(new DischargeCommands.ChamberDischargeCmd(dischargeSubsystem, telemetry),
+                        new InstantCommand(() -> mecanumDrive.drive(0,0.2,0,0.5))),
+
                 new WaitCommand(300),
 
-//                new DischargeCommands.ChamberDischargeCmd(dischargeSubsystem, telemetry),
-                new WaitCommand(300),
-
-//                new InstantCommand(() -> mecanumDrive.resetPos(new Point(mecanumDrive.getPosition().x, 0.935))),
                 new MecanumCommands.ConstantVelocityGotoCmd(telemetry, mecanumDrive, 1.8, 0.8, 0, 0.05, 0.8),
                 new WaitCommand(100),
-//                new InstantCommand(() -> this.pos = new Point(mecanumDrive.getPosition().x,mecanumDrive.getPosition().y)),
                 new MecanumCommands.SetRotationCmd(mecanumDrive, -90).withTimeout(500),
                 new WaitCommand(150),
-//                new InstantCommand(() -> mecanumDrive.resetPos(pos)),
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 2.68, 0.7, -90, 0.05, 0.8),
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 2.68, 1.5, -90, 0.05, 0.45),
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 2.91, 1.5, -90, 0.025, 1),

@@ -1,11 +1,8 @@
 package org.firstinspires.ftc.teamcode.commands;
 
 import com.arcrobotics.ftclib.command.CommandBase;
-import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
-import com.arcrobotics.ftclib.command.ParallelRaceGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
-import com.arcrobotics.ftclib.command.WaitCommand;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
@@ -66,10 +63,9 @@ public class IntakeCommands {
     public static class SlideHomeCmd extends CommandBase {
         IntakeSubsystem intakeSubsystem;
         double lastTick;
-        double lastTime = 0;
+
         final double maxDuration = 3;
         final boolean initTime;
-        final int minPosOffset = 40;
         ElapsedTime elapsedTime = new ElapsedTime();
 
         public SlideHomeCmd(IntakeSubsystem intakeSubsystem, boolean initTime) {
@@ -118,64 +114,15 @@ public class IntakeCommands {
 //            }
             return intakeSubsystem.isHome();
         }
-    }
-
-    public static class SlideHomeTouchCmd extends CommandBase {
-        IntakeSubsystem intakeSubsystem;
-        double lastTick;
-        double lastTime = 0;
-        final double maxDuration = 3;
-        final boolean initTime;
-        final int minPosOffset = 40;
-        ElapsedTime elapsedTime = new ElapsedTime();
-
-        public SlideHomeTouchCmd(IntakeSubsystem intakeSubsystem, boolean initTime) {
-            this.intakeSubsystem = intakeSubsystem;
-            this.initTime = initTime;
-            //addRequirements(intakeSubsystem);
-
-        }
-
-        @Override
-        public void initialize() {
-            lastTick = intakeSubsystem.getAveragePosition();
-            elapsedTime.reset();
-            intakeSubsystem.setArmPower(0);
-            intakeSubsystem.runWithoutEncoders();
-            addRequirements(intakeSubsystem);
-        }
-
-        @Override
-        public void execute() {
-            if (initTime) {
-                intakeSubsystem.setRawPower(-0.2);
-            }
-            else {
-                intakeSubsystem.setRawPower(-1);
-            }
-
-        }
-
-        @Override
-        public boolean isFinished() {
-
-
-            return intakeSubsystem.isHome() ||(!initTime && elapsedTime.seconds() > maxDuration);
-
-        }
 
         @Override
         public void end(boolean interrupted) {
-            intakeSubsystem.setArmPower(0);
-            intakeSubsystem.end = true;
-            if (!interrupted) {
+            if(!interrupted){
                 intakeSubsystem.resetEncoders();
-                intakeSubsystem.setTargetPos(intakeSubsystem.getMotorPosition() + minPosOffset);
-                intakeSubsystem.minSlidesPos = intakeSubsystem.getMotorPosition() + minPosOffset;
             }
-
         }
     }
+
 
     public static class ClawStageCmd extends CommandBase {
         IntakeSubsystem subsystem;
@@ -257,26 +204,20 @@ public class IntakeCommands {
             intakeSubsystem.setRotationServoPosition(position.get());
         }
 
-        @Override
-        public boolean isFinished() {
-            return false;
-        }
+
     }
 
     public static class IntakeManualGoToCmd extends CommandBase {
         IntakeSubsystem intakeSubsystem;
         Supplier<Double> power;
         ElapsedTime elapsedTime = new ElapsedTime();
-        double lastTimeMilli = 0;
         private static boolean isEnabled = true;
-        private static IntakeManualGoToCmd currentInstance;
 
         public IntakeManualGoToCmd(IntakeSubsystem intakeSubsystem, Supplier<Double> power) {
             this.intakeSubsystem = intakeSubsystem;
             this.power = power;
 
 
-            currentInstance = this;
             addRequirements(intakeSubsystem);
         }
 
@@ -284,9 +225,6 @@ public class IntakeCommands {
             isEnabled = enabled;
         }
 
-        public static boolean isEnabled() {
-            return isEnabled;
-        }
 
         @Override
         public void initialize() {
@@ -310,22 +248,6 @@ public class IntakeCommands {
         }
 
 
-        @Override
-        public boolean isFinished() {
-            return false;
-        }
-
-        @Override
-        public void end(boolean interrupted) {
-            currentInstance = null; // Clear the static reference when the command ends
-        }
-
-
-        public static void endCommand() {
-            if (currentInstance != null) {
-                CommandScheduler.getInstance().cancel(currentInstance);
-            }
-        }
 
     }
 
@@ -525,7 +447,6 @@ public class IntakeCommands {
         public SampleIntakeCmd(IntakeSubsystem intakeSubsystem) {
             final double
                     spinPower = 1,
-                    middleTime = 0.5,
                     grabbingTime = 0.75,
                     holdingPower = 0.05;
 
@@ -545,10 +466,7 @@ public class IntakeCommands {
 
     public static class SampleReverseIntakeCmd extends SequentialCommandGroup {
         public SampleReverseIntakeCmd(IntakeSubsystem intakeSubsystem) {
-            final double spinPower = 1,
-                    middleTime = 0.5,
-                    grabbingTime = 0.75,
-                    holdingPower = 0.05;
+            final double spinPower = 1;
 
             addCommands(
                     new ParallelCommandGroup(
@@ -637,10 +555,6 @@ public class IntakeCommands {
 
         }
 
-        @Override
-        public void execute() {
-
-        }
 
         @Override
         public boolean isFinished() {
@@ -649,7 +563,6 @@ public class IntakeCommands {
     }
 
     public static class InverseTransfer extends SequentialCommandGroup {
-        final int slidesBackAfterTransfer = 10;
         public static boolean transferring = false;
 
         public InverseTransfer(IntakeSubsystem intakeSubsystem, DischargeSubsystem dischargeSubsystem) {

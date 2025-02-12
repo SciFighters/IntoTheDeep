@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.commands;
 
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.arcrobotics.ftclib.command.WaitCommand;
 
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
@@ -16,8 +17,11 @@ public class LimelightCommands {
         final double kp = 0.01;
         double currentPipeline;
 
-        public AlignXCmd(LimelightSubsystem limelight) {
+        public AlignXCmd(LimelightSubsystem limelight, MecanumDrive mecanumDrive) {
             this.limelight = limelight;
+            this.mecanumDrive = mecanumDrive;
+            addRequirements(limelight,mecanumDrive);
+
         }
 
         @Override
@@ -37,7 +41,10 @@ public class LimelightCommands {
 
         @Override
         public void end(boolean interrupted) {
+            limelight.alignedY = limelight.getYDistance();
+            limelight.alignedAngle = limelight.getAngle();
             limelight.stopLimelight();
+
         }
     }
 
@@ -46,18 +53,21 @@ public class LimelightCommands {
         IntakeSubsystem intakeSubsystem;
         DischargeSubsystem dischargeSubsystem;
 
-        public LimelightIntake(LimelightSubsystem limelightSubsystem, IntakeSubsystem intakeSubsystem, DischargeSubsystem dischargeSubsystem) {
+        public LimelightIntake(LimelightSubsystem limelightSubsystem, IntakeSubsystem intakeSubsystem, DischargeSubsystem dischargeSubsystem, MecanumDrive mecanumDrive) {
             this.intakeSubsystem = intakeSubsystem;
             this.limelightSubsystem = limelightSubsystem;
-            addCommands(new AlignXCmd(limelightSubsystem),
-                    new IntakeCommands.StartIntakeCmd(intakeSubsystem, false, (int) limelightSubsystem.getYDistance()),
-                    new IntakeCommands.SampleIntakeCmd(intakeSubsystem),
+            addCommands(new AlignXCmd(limelightSubsystem, mecanumDrive),
+                    new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, (int) limelightSubsystem.alignedY),//todo: make in ticks
+                    new IntakeCommands.SetRotationCmd(intakeSubsystem, limelightSubsystem.alignedAngle),//todo: convert to servo(0 - 1)
+                    new WaitCommand(500),
+                    new IntakeCommands.SampleIntakeCmd(intakeSubsystem),//todo: not related but make the intake max bigger
                     new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem));
         }
 
         @Override
         public void initialize() {
             limelightSubsystem.startLimelight();
+            super.initialize();
         }
     }
 

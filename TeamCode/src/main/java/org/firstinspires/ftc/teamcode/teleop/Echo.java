@@ -152,6 +152,9 @@ public class Echo extends CommandOpMode {
                     dischargeSubsystem.setDefaultCommand(new DischargeCommands.DischargeManualGotoCmd(
                             systemGamepad::getRightY, dischargeSubsystem, telemetry));
                     driverA.whenHeld(new MecanumCommands.SetRotationCmd(mecanumDrive, 0));
+                    driverB.whenHeld(new MecanumCommands.SetRotationCmd(mecanumDrive, 90));
+                    driverY.whenHeld(new MecanumCommands.SetRotationCmd(mecanumDrive, 180));
+                    driverX.whenHeld(new MecanumCommands.SetRotationCmd(mecanumDrive, 270));
 
                     systemA.whenPressed(new SequentialCommandGroup(
                             new IntakeCommands.WaitForTransferEnd(),

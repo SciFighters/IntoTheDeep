@@ -14,7 +14,6 @@ public class DischargeCommands {
     public static class SlideUntilCmd extends CommandBase {
         DischargeSubsystem subsystem;
         final int position;
-        final int maxPosition = 3000;
         double power;
 
         public SlideUntilCmd(DischargeSubsystem subsystem, int position, double power) {
@@ -139,7 +138,6 @@ public class DischargeCommands {
         double maxDuration;
         final int minTargetOffset = 50;
         ElapsedTime elapsedTime = new ElapsedTime();
-        boolean switched = false;
 
         public GoHomeCmd(DischargeSubsystem dischargeSubsystem) {
             this.dischargeSubsystem = dischargeSubsystem;
