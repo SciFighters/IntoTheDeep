@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.commands;
 
 import com.arcrobotics.ftclib.command.CommandBase;
+import com.arcrobotics.ftclib.kinematics.wpilibkinematics.ChassisSpeeds;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -16,6 +18,10 @@ public class MecanumCommands {
             addRequirements(mecanumDrive);
         }
 
+        @Override
+        public boolean isFinished() {
+            return false;
+        }
     }
 
     public static class PowerCmd extends CommandBase {
@@ -61,6 +67,175 @@ public class MecanumCommands {
         }
     }
 
+    public static class IntakePowerCmd extends CommandBase {
+        Supplier<Double> xS;
+        Supplier<Double> yS;
+        Supplier<Double> rS;
+        Supplier<Double> xD;
+        Supplier<Double> yD;
+        Supplier<Double> rD;
+        Supplier<Double> boost;
+        double xSum, ySum, rSum;
+        final MecanumDrive mecanumDrive;
+        final Telemetry telemetry;
+        final double rotationModifier = 0.75;
+        ChassisSpeeds fieldSpeeds;
+
+        public IntakePowerCmd(Telemetry telemetry, MecanumDrive mecanumDrive,
+                              Supplier<Double> xS, Supplier<Double> yS, Supplier<Double> rS,
+                              Supplier<Double> xD, Supplier<Double> yD, Supplier<Double> rD,
+                              Supplier<Double> boost) {
+            this.xS = xS;
+            this.yS = yS;
+            this.rS = () -> rS.get() * rotationModifier;
+            this.xD = xD;
+            this.yD = yD;
+            this.rD = () -> rD.get() * rotationModifier;
+            this.boost = boost;
+            this.mecanumDrive = mecanumDrive;
+            this.telemetry = telemetry;
+
+
+            addRequirements(mecanumDrive);
+        }
+
+        @Override
+        public void execute() {
+//            telemetry.addData("X", x.get());
+//            telemetry.addData("Y", y.get());
+//            telemetry.addData("TURN", r.get());
+            mecanumDrive.setFieldOriented(true);
+            fieldSpeeds = mecanumDrive.calcDriveSpeeds(xD.get(), yD.get());
+            xSum = Range.clip(fieldSpeeds.vxMetersPerSecond + xS.get() * 0.3, -1, 0.8);
+            ySum = Range.clip(fieldSpeeds.vyMetersPerSecond + yS.get() * 0.3, -1, 0.8);
+            rSum = fieldSpeeds.omegaRadiansPerSecond;
+            mecanumDrive.setFieldOriented(false);
+            mecanumDrive.drive(xSum, ySum, rSum, boost.get());
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            mecanumDrive.drive(0, 0, 0, 0);
+        }
+    }
+
+
+    public static class MecanumShakeCmd extends CommandBase {
+        double speed, interval;
+        ElapsedTime runtime = new ElapsedTime();
+        MecanumDrive mecanumDrive;
+        int switched = 1;
+
+        public MecanumShakeCmd(MecanumDrive mecanumDrive, double speed, double interval) {
+            this.interval = interval;
+            this.speed = speed;
+            this.mecanumDrive = mecanumDrive;
+            addRequirements(mecanumDrive);
+        }
+
+        @Override
+        public void execute() {
+            if (runtime.seconds() <= interval) {
+                mecanumDrive.drive(switched, 0, 0, speed);
+            } else {
+                runtime.reset();
+                switched *= -1;
+            }
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            mecanumDrive.drive(0, 0, 0, 0);
+        }
+    }
+
+    public static class TwoSpeedsGotoCmd extends CommandBase {
+        double x, y, wantedAngle, wantedDistance;
+        double kp = 0.025;
+        Point currentPos;
+        double boost = 0.5;
+        double sensitivity;
+        double rotation = 0;
+        double minPower = 0.04;
+        MecanumDrive mecanumDrive;
+        Telemetry telemetry;
+        boolean noRotation = false;
+        final double speed1, speed2;
+        final double swapDistance;
+
+        public TwoSpeedsGotoCmd(Telemetry telemetry, MecanumDrive mecanumDrive, double x, double y,
+                                double wantedAngle, double sensitivity, double speed1, double speed2, double swapDistance) {
+            this.swapDistance = swapDistance;
+            this.x = x;
+            this.y = y;
+            this.wantedAngle = wantedAngle;
+            this.speed1 = speed1;
+            this.speed2 = speed2;
+            this.sensitivity = sensitivity;
+            this.mecanumDrive = mecanumDrive;
+            this.telemetry = telemetry;
+            this.wantedDistance = -1;
+
+            addRequirements(mecanumDrive);
+        }
+
+        public TwoSpeedsGotoCmd(Telemetry telemetry, MecanumDrive mecanumDrive, double x, double y,
+                                double wantedAngle, double sensitivity, double speed1, double speed2, double swapDistance, boolean noRotation) {
+            this.swapDistance = swapDistance;
+            this.x = x;
+            this.y = y;
+            this.wantedAngle = wantedAngle;
+            this.speed1 = speed1;
+            this.speed2 = speed2;
+            this.sensitivity = sensitivity;
+            this.mecanumDrive = mecanumDrive;
+            this.telemetry = telemetry;
+            this.wantedDistance = -1;
+            this.noRotation = noRotation;
+
+            addRequirements(mecanumDrive);
+        }
+
+        @Override
+        public void execute() {
+            currentPos = mecanumDrive.getPosition();
+            double[] localVector = {x - currentPos.x, y - currentPos.y};
+            double MovementAngle = Math.atan2(localVector[0], localVector[1]);
+            double length;
+            if (Math.hypot(localVector[0], localVector[1]) > swapDistance) {
+                length = Range.clip(speed1, -1, 1);
+                length += Math.signum(length) * minPower;
+            } else {
+                length = Range.clip(speed2, -1, 1);
+                length += Math.signum(length) * minPower;
+            }
+
+            localVector[0] = Math.sin(MovementAngle) * length;
+            localVector[1] = Math.cos(MovementAngle) * length;
+            rotation = Utils.calcDeltaAngle(wantedAngle + 180, mecanumDrive.getAdjustedHeading()) * kp;
+
+
+            if (noRotation) {
+                mecanumDrive.drive(localVector[0], localVector[1], 0, boost);
+
+            } else {
+                mecanumDrive.drive(localVector[0], localVector[1], (rotation / boost) * 0.5, boost);
+            }
+
+        }
+
+        @Override
+        public boolean isFinished() {
+            return (((Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) || (900 <= wantedDistance))
+                    && ((Math.abs(wantedAngle + 180 - mecanumDrive.getAdjustedHeading()) < 10) || noRotation));
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            mecanumDrive.drive(0, 0, 0, 0);
+        }
+    }
+
     public static class GotoCmd extends CommandBase {
         double x, y, wantedAngle, wantedDistance;
         double kp = 0.01;
@@ -71,7 +246,7 @@ public class MecanumCommands {
         MecanumDrive mecanumDrive;
         Telemetry telemetry;
         boolean noRotation = false;
-        double minPower = 0.2;//todo: change to the actual min to move
+        double minPower = 0.15;
 
         public GotoCmd(Telemetry telemetry, MecanumDrive mecanumDrive, double x, double y,
                        double wantedAngle, double sensitivity, double wantedDistance, double boost) {
@@ -121,12 +296,17 @@ public class MecanumCommands {
             currentPos = mecanumDrive.getPosition();
             double[] localVector = {x - currentPos.x, y - currentPos.y};
             double MovementAngle = Math.atan2(localVector[0], localVector[1]);
-            double length = Range.clip(Math.hypot(localVector[0], localVector[1]), -1, 1);
+            double length = Math.hypot(localVector[0], localVector[1]);
+
+
             if (Math.abs(length) < minPower) {
                 length = Math.signum(length) * minPower;
             }
-            localVector[0] = Math.sin(MovementAngle) * length;
-            localVector[1] = Math.cos(MovementAngle) * length;
+            double speed = length;
+            speed = Range.clip(speed, -1, 1);
+
+            localVector[0] = Math.sin(MovementAngle) * speed;
+            localVector[1] = Math.cos(MovementAngle) * speed;
             rotation = Utils.calcDeltaAngle(wantedAngle + 180, mecanumDrive.getAdjustedHeading()) * kp;
 
             if (noRotation) {
@@ -147,6 +327,35 @@ public class MecanumCommands {
         @Override
         public void end(boolean interrupted) {
             mecanumDrive.drive(0, 0, 0, 0);
+        }
+    }
+
+    public static class chamberWait extends CommandBase {
+        MecanumDrive mecanumDrive;
+        ElapsedTime elapsedTime = new ElapsedTime();
+        final double maxTime;
+        Point currentPos;
+        final double chamberPos = 0.93;
+
+        public chamberWait(MecanumDrive mecanumDrive) {
+            this.mecanumDrive = mecanumDrive;
+            maxTime = 1;
+        }
+
+        public chamberWait(MecanumDrive mecanumDrive, double maxTime) {
+            this.mecanumDrive = mecanumDrive;
+            this.maxTime = maxTime;
+        }
+
+        @Override
+        public void initialize() {
+            elapsedTime.reset();
+        }
+
+        @Override
+        public boolean isFinished() {
+            currentPos = mecanumDrive.getPosition();
+            return elapsedTime.seconds() > maxTime || currentPos.y > chamberPos;
         }
     }
 
@@ -229,6 +438,7 @@ public class MecanumCommands {
 
         @Override
         public boolean isFinished() {
+            if (currentPos == null) return false;
             return (((Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) || (900 <= wantedDistance))
                     && ((Math.abs(wantedAngle + 180 - mecanumDrive.getAdjustedHeading()) < 10) || noRotation));
         }
@@ -329,8 +539,8 @@ public class MecanumCommands {
 
     public static class SetRotationCmd extends CommandBase {
         double wantedHeading;
-        double Integral, derivative;
-        public static double kp = 0.01;//0.025
+        double error = 0, lastError = 0, proportional, lastTime = 0, Integral, derivative;
+        public static double kp = 0.01, ki = 0.0005, kd = -0.006;//0.025
         MecanumDrive mecanumDrive;
 
         public SetRotationCmd(MecanumDrive mecanumDrive, double wantedHeading) {
@@ -361,6 +571,10 @@ public class MecanumCommands {
             mecanumDrive.drive(0, 0, Utils.calcDeltaAngle(wantedHeading + 180, mecanumDrive.getAdjustedHeading()) * kp, 0.5);
         }
 
+        @Override
+        public boolean isFinished() {
+            return false;
+        }
 
         @Override
         public void end(boolean interrupted) {
@@ -369,6 +583,31 @@ public class MecanumCommands {
         }
     }
 
+    public static class MoveSideToSideCmd extends CommandBase {
+        MecanumDrive mecanumDrive;
+        ElapsedTime time = new ElapsedTime();
+
+        public MoveSideToSideCmd(MecanumDrive mecanumDrive) {
+            this.mecanumDrive = mecanumDrive;
+        }
+
+        @Override
+        public void initialize() {
+            time.reset();
+        }
+
+        @Override
+        public void execute() {
+
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            mecanumDrive.extraX = 0;
+            mecanumDrive.extraY = 0;
+            mecanumDrive.extraR = 0;
+        }
+    }
 
     public static class MoverServoCmd extends CommandBase {
         MecanumDrive mecanumDrive;

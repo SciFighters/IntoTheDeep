@@ -5,6 +5,7 @@ import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.SavedVariables;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
 import org.firstinspires.ftc.teamcode.commands.IntakeCommands;
 import org.firstinspires.ftc.teamcode.commands.MecanumCommands;
@@ -17,13 +18,16 @@ import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
 public class AutoUtils {
     public static void initCommands(CommandOpMode commandOpMode, DischargeSubsystem dischargeSubsystem, IntakeSubsystem intakeSubsystem) {
         commandOpMode.schedule(new SequentialCommandGroup(
+
                 new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem),
                 new DischargeCommands.DischargeGrabCmd(dischargeSubsystem),
                 new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.UPPER),
                 //new IntakeCommands.Wait(intakeSubsystem, 1),
                 new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true),
                 new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
-                new DischargeCommands.GoHomeCmd(dischargeSubsystem)));
+                new DischargeCommands.MotorControl(dischargeSubsystem, () -> 0.0, false, commandOpMode.telemetry),
+                new DischargeCommands.GoHomeCmd(dischargeSubsystem)
+        ));
     }
 
     public static CommandBase inwardsPark(MecanumDrive mecanumDrive, Telemetry telemetry) {
@@ -35,11 +39,11 @@ public class AutoUtils {
     }
 
     public static CommandBase dischargeGotoChamber(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
-        return new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry);
+        return new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight);
     }
 
     public static CommandBase dischargeGotoBasket(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
-        return new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry);
+        return new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highBasketHeight);
     }
 
     public static CommandBase chamberGoto(MecanumDrive mecanumDrive, Telemetry telemetry) {
@@ -91,11 +95,17 @@ public class AutoUtils {
     }
 
     public static CommandBase sampleIntake(IntakeSubsystem intakeSubsystem) {
-        return new IntakeCommands.SampleIntakeCmd(intakeSubsystem);
+        return new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem);
     }
 
     public static CommandBase transfer(DischargeSubsystem dischargeSubsystem, IntakeSubsystem intakeSubsystem) {
         return new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem);
     }
 
+    public static void savePosition(MecanumDrive mecanumDrive) {
+        SavedVariables.angle = mecanumDrive.getAdjustedHeading();
+        SavedVariables.x = mecanumDrive.getPosition().x;
+        SavedVariables.y = mecanumDrive.getPosition().y;
+
+    }
 }

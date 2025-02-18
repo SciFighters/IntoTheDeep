@@ -10,25 +10,27 @@ public class LimelightSubsystem extends SubsystemBase {
     MultipleTelemetry telemetry;
     int pipeline = 0;
     LLResult result;
-    final double limelightH = 0, sampleH = 3.8, limelightAngle = 30.5;
-    double distance;
-    public final double ticksPerCM = 0, distanceFromArmStart = 0;
-    public double alignedY, alignedAngle;
+    final double limelightH = 41.5, sampleH = 3.8, limelightAngle = 27.6;
+    int distance;
+    public final double middleOfScreen = 300, tickPerCM = 19.34, distanceFromArmStart = 25;
+    public double alignedY = 0;
 
     public LimelightSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
         this.telemetry = telemetry;
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.start();
+        telemetry.setMsTransmissionInterval(11);
         limelight.pipelineSwitch(pipeline);
-
+        limelight.start();
     }
 
     public double getXDistance() {
+        updateResults();
         result = limelight.getLatestResult();
         return result.getPythonOutput()[0];
     }
 
     public double getAngle() {
+        updateResults();
         return result.getPythonOutput()[4];
     }
 
@@ -41,9 +43,16 @@ public class LimelightSubsystem extends SubsystemBase {
         return pipeline;
     }
 
-    public double getYDistance() {
-        distance = (limelightH - sampleH) * Math.tan(Math.toRadians(result.getPythonOutput()[1] + limelightAngle)) * ticksPerCM + distanceFromArmStart;
+    public int getYDistance() {
+        updateResults();
+        distance = Math.min((int) (((limelightH - sampleH) * Math.tan(Math.toRadians(-result.getPythonOutput()[1] / 240 * 42 + limelightAngle)) + distanceFromArmStart + 24) * tickPerCM), 1700);
+        alignedY = distance;
         return distance;
+    }
+
+    public double getRawY() {
+        updateResults();
+        return result.getPythonOutput()[1];
     }
 
     public void startLimelight() {
@@ -54,4 +63,7 @@ public class LimelightSubsystem extends SubsystemBase {
         limelight.stop();
     }
 
+    public void updateResults() {
+        result = limelight.getLatestResult();
+    }
 }

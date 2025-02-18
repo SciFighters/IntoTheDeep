@@ -2,18 +2,23 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.SubsystemBase;
+import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
+import lombok.Setter;
 
 public class IntakeSubsystem extends SubsystemBase {
-    private final DcMotor rMotor;
-    private final DcMotor lMotor;
+    private final DcMotorEx rMotor;
+    private final DcMotorEx lMotor;
     private final Servo hServo; // claw up & down
     private final Servo rServo; // claw rotation
     private final Servo armsServo; // claw arms angle
@@ -22,17 +27,19 @@ public class IntakeSubsystem extends SubsystemBase {
 
     int positionCorrection = 0;
     private double targetPos = -1;
-    private final int maxArmLength = 1500;
+    private final int maxArmLength = 1700;
     public int minSlidesPos = 10;
 
+    public final int manualTicksPerSecond = 785;
     public final double slidesSpeed = 1;
-    public final double slidesLowSpeed = 0.3;
+    public final double slidesLowSpeed = 0.4;
+    public boolean end = false;
     TouchSensor leftTouch, rightTouch;
 
 
     public IntakeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
-        rMotor = hardwareMap.dcMotor.get("leftIntakeMotor");
-        lMotor = hardwareMap.dcMotor.get("rightIntakeMotor");
+        rMotor = hardwareMap.get(DcMotorEx.class, "leftIntakeMotor");
+        lMotor = hardwareMap.get(DcMotorEx.class, "rightIntakeMotor");
         lMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -68,6 +75,10 @@ public class IntakeSubsystem extends SubsystemBase {
         lMotor.setPower(power);
     }
 
+    public double getTargetPos() {
+        return targetPos;
+    }
+
     public boolean isHome() {
         return leftTouch.isPressed();
     }//|| rightTouch.isPressed()
@@ -85,6 +96,9 @@ public class IntakeSubsystem extends SubsystemBase {
         rServo.setPosition(position);
     }
 
+    public double getZServoPosition() {
+        return rServo.getPosition();
+    }
 
     public void setHServoPosition(double position) {
         hServo.setPosition(position);
@@ -94,6 +108,9 @@ public class IntakeSubsystem extends SubsystemBase {
         armsServo.setPosition(stage);
     }
 
+    public double getGripServoPosition() {
+        return armsServo.getPosition();
+    }
 
     public void setSpinPower(double power) {
         spinServo.setPower(power);
@@ -111,6 +128,9 @@ public class IntakeSubsystem extends SubsystemBase {
         positionCorrection = pos;
     }
 
+    public double getXServoPosition() {
+        return hServo.getPosition();
+    }
 
     public void resetEncoders() {
         rMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -133,6 +153,19 @@ public class IntakeSubsystem extends SubsystemBase {
     public void setTargetPos(int targetPos) {
         this.targetPos = targetPos;
     }
+
+    public void changeTargetPos(double change) {
+        targetPos += change;
+        if (targetPos < minSlidesPos)
+            targetPos = minSlidesPos;
+        if (targetPos > maxArmLength)
+            targetPos = maxArmLength;
+    }
+
+    public double getCurrent() {
+        return (lMotor.getCurrent(CurrentUnit.AMPS) + lMotor.getCurrent(CurrentUnit.AMPS)) / 2;
+    }
+
 
     // make second button that while pressing it it goes to half of height and pushes things
     // away and then lowers one more stage and picks up the sample

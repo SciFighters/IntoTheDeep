@@ -27,7 +27,8 @@ import org.opencv.core.Point;
 
 public class MecanumDrive extends SubsystemBase {
     public DcMotorEx fl, fr, bl, br;
-    public Servo moverServo;
+//    public Servo moverGoGo;
+public Servo moverServo;
     DistanceSensor distanceSensor;
     MecanumDriveKinematics kinematics;
     BNO055IMU imu;
@@ -46,6 +47,7 @@ public class MecanumDrive extends SubsystemBase {
 
     public MecanumDrive(MultipleTelemetry telemetry, HardwareMap hm, LinearOpMode opMode) {
         this.telemetry = telemetry;
+        moverServo = hm.get(Servo.class, "movergogo");
         fl = hm.get(DcMotorEx.class, "fl_motor");
         fr = hm.get(DcMotorEx.class, "fr_motor");
         br = hm.get(DcMotorEx.class, "br_motor");
@@ -90,6 +92,7 @@ public class MecanumDrive extends SubsystemBase {
     public MecanumDrive(MultipleTelemetry telemetry, HardwareMap hm, Point start, double startAngle, LinearOpMode opMode) {
         this.opMode = opMode;
         this.telemetry = telemetry;
+        moverServo = hm.get(Servo.class, "movergogo");
         fl = hm.get(DcMotorEx.class, "fl_motor");
         fr = hm.get(DcMotorEx.class, "fr_motor");
         br = hm.get(DcMotorEx.class, "br_motor");
@@ -166,15 +169,13 @@ public class MecanumDrive extends SubsystemBase {
         x += extraX;
         y += extraY;
         rotation += extraR;
+
         x *= boost * 3;
         y *= boost * 3;
         rotation *= boost * 2;
-        ChassisSpeeds speeds;
-        if (isFieldOriented) {
-            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(-x, y, 0, Rotation2d.fromDegrees(getAdjustedHeading()));
-        } else {
-            speeds = new ChassisSpeeds(-x, y, 0);
-        }
+
+        ChassisSpeeds speeds = calcDriveSpeeds(x, y);
+
 
 // Now use this in our kinematics
         MecanumDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(speeds);
@@ -204,13 +205,21 @@ public class MecanumDrive extends SubsystemBase {
         telemetry.update();
     }
 
+    public ChassisSpeeds calcDriveSpeeds(double x, double y) {
+        if (isFieldOriented) {
+            return ChassisSpeeds.fromFieldRelativeSpeeds(-x, y, 0, Rotation2d.fromDegrees(getAdjustedHeading()));
+        } else {
+            return new ChassisSpeeds(-x, y, 0);
+        }
+    }
+
     public double getHeading() {
         Orientation orientation = imu.getAngularOrientation();
         return (-orientation.firstAngle) % 360 + 180;
     }
 
     public void resetHeading() {
-        correctedHeading = getHeading() + 180;
+        correctedHeading = getHeading();
     }
 
     public void setHeading(double heading) {

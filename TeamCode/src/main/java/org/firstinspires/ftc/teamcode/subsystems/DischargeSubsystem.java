@@ -6,19 +6,22 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
 public class DischargeSubsystem extends SubsystemBase {
     private final DcMotorEx lowerMotor, upperMotor;
-    private final Servo gearBoxServo, clawServo;
+    private Servo gearBoxServo, clawServo;
     double servoDischargePos = 0, servoClimbPos = 1;
-    final double clawServoHoldPos = 0.2, clawServoReleasePos = 0.37;
+    final double clawServoHoldPos = 0.38, clawServoReleasePos = 0.58;
     private final TouchSensor touchSensor;
     MultipleTelemetry telemetry;
-
+    public double timeUp = 0;
 
     public final double climbRatio = 9;
     public final double dischargeRatio = 15 / 11.0;
@@ -32,15 +35,19 @@ public class DischargeSubsystem extends SubsystemBase {
     public double minLiftPos = 20;
     public final double minClimbLiftPos = 170;
 
-    public final int highChamberHeight = 825;//880
+    public final int highChamberHeight = 790;//880
     public final int lowChamberHeight = 350;
+    public final int chamberReleaseDeltaSlides = 100;
+
     public final int highBasketHeight = 1765;
     public final int lowBasketHeight = 500;
+    public final int BasketReleaseDeltaDrive = 0;
 
     public final int manualTicksPerSecond = 1200;
     public final double slidesSpeed = 1;
     public final double slideHalfSpeed = 1;
     public final double slidesLowSpeed = 1;//0.7
+    PIDFCoefficients pidf = new PIDFCoefficients(15, 0.05, 0, 0);
 
 
     public DischargeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
@@ -162,6 +169,14 @@ public class DischargeSubsystem extends SubsystemBase {
         this.targetPosInTicks = (int) (getPosition() + (newTargetPosInCM - getLiftPosInCM()) * gearBoxRatio);
     }
 
+    public double getTargetPosInTicks() {
+        return targetPosInTicks;
+    }
+
+
+    public String getMode() {
+        return lowerMotor.getMode().toString();
+    }
 
     public void changeTargetPos(double change) {
         setTargetPosInTicks(getLiftPosInCM() + change);
@@ -175,4 +190,11 @@ public class DischargeSubsystem extends SubsystemBase {
         return lowerMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
+    public double getCurrent() {
+        return (lowerMotor.getCurrent(CurrentUnit.AMPS) + upperMotor.getCurrent(CurrentUnit.AMPS)) / 2;
+    }
+
+    public int getAveragePosition() {
+        return (int) ((getPosition() + getPosition2()) / 2);
+    }
 }
