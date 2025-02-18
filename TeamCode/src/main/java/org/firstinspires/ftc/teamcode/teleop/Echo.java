@@ -235,9 +235,9 @@ public class Echo extends CommandOpMode {
     }
 
     public void intakeBindings() {
-        mecanumDrive.setDefaultCommand(new MecanumCommands.PowerCmd(telemetry, mecanumDrive,
-                systemGamepad::getRightX, mecanumY, () -> 0.0,
-                () -> systemGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) * 0.5 + 0.2, false));
+//        mecanumDrive.setDefaultCommand(new MecanumCommands.PowerCmd(telemetry, mecanumDrive,
+//                systemGamepad::getRightX, mecanumY, () -> 0.0,
+//                () -> systemGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) * 0.5 + 0.2, false));
 
         mecanumDrive.setDefaultCommand(new MecanumCommands.IntakePowerCmd(telemetry, mecanumDrive,
                 systemGamepad::getRightX, () -> 0.0, () -> 0.0,
