@@ -11,7 +11,6 @@ import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.command.button.Trigger;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -194,6 +193,8 @@ public class Echo extends CommandOpMode {
                 new SetStateCommands.ChamberStateCmd(), //change to chamber state
                 new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight))); //go to chamber
 
+        systemB.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
+
         systemY.whenPressed(new SequentialCommandGroup(
                 new SetStateCommands.BasketStateCmd(), //change to basket state
                 new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highBasketHeight))); //go to high basket
@@ -338,6 +339,10 @@ public class Echo extends CommandOpMode {
         systemB.whenPressed(new SequentialCommandGroup(
                 new IntakeCommands.StartIntakeCmd(intakeSubsystem),
                 new SetStateCommands.IntakeStateCmd())).and(new Trigger(() -> !driverStart.get()));
+//        systemB.whenPressed(new SequentialCommandGroup(
+//                new LimelightCommands.LimelightStartIntake(limeLightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive),
+//                new SetStateCommands.IntakeStateCmd()
+//        ));
 
         systemX.whenPressed(new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem));
 
@@ -345,16 +350,17 @@ public class Echo extends CommandOpMode {
 //                    systemRightStick.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
 
         systemBack.whenPressed(new IntakeCommands.SlideHomeCmd(intakeSubsystem, false));
+        systemDPadLeft.whenPressed(new DischargeCommands.HpDischarge(dischargeSubsystem));
 
         systemLeftBumper.whenPressed(new SequentialCommandGroup(
                 new SetStateCommands.NoneStateCmd(),
                 new DischargeCommands.GoHomeCmd(dischargeSubsystem)));
-        systemDPadUp.whenPressed(new LimelightCommands.LimelightIntake(limeLightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive));
+        systemDPadUp.whenPressed(new LimelightCommands.LimelightCompleteSubIntake(limeLightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive));
 //                    systemDPadDown.whenPressed(new SequentialCommandGroup(
 //                            new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, limeLightSubsystem::getYDistance),
 //                            new SetStateCommands.IntakeStateCmd()));
 //                    systemDPadLeft.whenPressed(new LimelightCommands.AlignXCmd(limeLightSubsystem, mecanumDrive));
-        systemDPadDown.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0)));
+        systemDPadDown.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
     }
 
     private void telemetries() {
@@ -365,6 +371,7 @@ public class Echo extends CommandOpMode {
         telemetry.addData("intake default command", intakeSubsystem.getDefaultCommand().getName());
         telemetry.addData("intake current command", intakeSubsystem.getCurrentCommand().getName());
         telemetry.addData("current", dischargeSubsystem.getCurrent());
+        telemetry.addData("intakePower", intakeSubsystem.getPower());
         //multipleTelemetry.addData("x limelight", limeLightSubsystem.getXDistance());
         //multipleTelemetry.addData("y limelight", limeLightSubsystem.getYDistance());
         //multipleTelemetry.addData("angle limelight", limeLightSubsystem.getAngle());
