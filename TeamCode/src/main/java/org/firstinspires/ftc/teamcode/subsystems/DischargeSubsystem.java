@@ -35,11 +35,11 @@ public class DischargeSubsystem extends SubsystemBase {
     public double minLiftPos = 20;
     public final double minClimbLiftPos = 170;
 
-    public final int highChamberHeight = 830;//880
+    public final int highChamberHeight = 699;//880
     public final int lowChamberHeight = 350;
     public final int chamberReleaseDeltaSlides = 100;
 
-    public final int highBasketHeight = 1765;
+    public final int highBasketHeight = 1635;
     public final int lowBasketHeight = 500;
     public final int BasketReleaseDeltaDrive = 0;
 

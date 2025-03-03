@@ -161,13 +161,13 @@ public class DischargeCommands {
         private static int targetPosition = 0;
         private static int stayStillTarget = 0;
 
-        private final double goToKp = 8;
-        private final double stayStillKp = 10;
+        private final double goToKp = 5;
+        private final double stayStillKp = 4;
         //        private final double stayStillKi = 0.01;
 //        private double Integral = 0;
 //        private double lastTime = 0;
-        private final double goToMin = 0.2;
-        private final double stayStillMin = 0.2;
+        private final double goToMin = 0.08;
+        private final double stayStillMin = 0.08;
 //        private ElapsedTime elapsedTime = new ElapsedTime();
 
         public MotorControl(DischargeSubsystem dischargeSubsystem, Supplier<Double> manualPower,
@@ -234,9 +234,9 @@ public class DischargeCommands {
         }
 
         private double calculateGoToTargetPID(double error, int curPos) {
-            if (curPos < 60)
+            if (curPos < 80)
                 return 0.6;
-            if (curPos < 125)
+            if (curPos < 150)
                 return 0.75;
             if (Math.abs(error) >= 200)
                 return Math.signum(error); // Full power in the direction of the target
@@ -335,7 +335,7 @@ public class DischargeCommands {
 
         public GoHomeCmd(DischargeSubsystem dischargeSubsystem) {
             this.dischargeSubsystem = dischargeSubsystem;
-            maxDuration = 3;
+            maxDuration = 4;
             addRequirements(dischargeSubsystem);
         }
 

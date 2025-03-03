@@ -38,6 +38,7 @@ public class IntakeCommands {
     public static class OpenScrewCmd extends CommandBase {
         IntakeSubsystem intakeSubsystem;
         final boolean wait;
+        ElapsedTime time = new ElapsedTime();
 
         public OpenScrewCmd(IntakeSubsystem intakeSubsystem, boolean wait) {
             this.intakeSubsystem = intakeSubsystem;
@@ -48,17 +49,20 @@ public class IntakeCommands {
         @Override
         public void initialize() {
             intakeSubsystem.openScrew();
+            time.reset();
         }
 
         @Override
         public boolean isFinished() {
-            return intakeSubsystem.isScrewOpened() || !wait;
+            return time.seconds() > intakeSubsystem.openScrewTime || !wait;
         }
     }
 
     public static class CloseScrewCmd extends CommandBase {
         IntakeSubsystem intakeSubsystem;
         final boolean wait;
+        ElapsedTime time = new ElapsedTime();
+
 
         public CloseScrewCmd(IntakeSubsystem intakeSubsystem, boolean wait) {
             this.intakeSubsystem = intakeSubsystem;
@@ -69,11 +73,12 @@ public class IntakeCommands {
         @Override
         public void initialize() {
             intakeSubsystem.closeScrew();
+            time.reset();
         }
 
         @Override
         public boolean isFinished() {
-            return !intakeSubsystem.isScrewOpened() || !wait;
+            return time.seconds() > intakeSubsystem.openScrewTime || !wait;
         }
     }
 
@@ -175,7 +180,7 @@ public class IntakeCommands {
 //                return (Math.abs(deltaTick) <= 8 && (avg < 200 || initTime));
 
 //            }
-            return intakeSubsystem.isHome() || (intakeSubsystem.getCurrent() > 90 && intakeSubsystem.getAveragePosition() < 400);
+            return intakeSubsystem.isHome(); //|| (intakeSubsystem.getCurrent() > 90 && intakeSubsystem.getAveragePosition() < 400);
         }
 
         @Override
@@ -407,7 +412,7 @@ public class IntakeCommands {
 
     //if doesnt work check if everything needs to not have addRequirements(subsystem);
     public static class StartIntakeCmd extends SequentialCommandGroup {
-        private final int pos = 1300;
+        private final int pos = 1500;
 
         public StartIntakeCmd(IntakeSubsystem subsystem) {
             StartIntake(subsystem, false, pos);
@@ -427,7 +432,7 @@ public class IntakeCommands {
                     new ClawStageCmd(subsystem, ClawStages.UPPER),
                     new SetRotationCmd(subsystem, 0),
                     new SlideGotoCmd(subsystem, position),
-                    new ClawStageCmd(subsystem, ClawStages.ROTATE));
+                    new ClawStageCmd(subsystem, ClawStages.LOWER));
 
 
         }
@@ -621,7 +626,7 @@ public class IntakeCommands {
                     new DischargeGrabCmd(dischargeSubsystem),
                     new CloseScrewCmd(intakeSubsystem, true),
                     new SetPowerCmd(intakeSubsystem, 0),
-                    new SlideUntilCmd(intakeSubsystem, intakeSubsystem.minSlidesPos + slidesBackAfterTransfer, 0.4, false)
+                    new SlideUntilCmd(intakeSubsystem, intakeSubsystem.minSlidesPos + slidesBackAfterTransfer + 40, 0.4, false)
             );
             addRequirements(intakeSubsystem, dischargeSubsystem); //may be unnecessary
         }
@@ -683,10 +688,6 @@ public class IntakeCommands {
 
         }
 
-        @Override
-        public void execute() {
-
-        }
 
         @Override
         public boolean isFinished() {

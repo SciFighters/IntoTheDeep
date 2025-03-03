@@ -131,10 +131,10 @@ public class LimelightCommands {
                     new WaitCommand(100),
                     new IntakeCommands.StartIntakeCmd(intakeSubsystem, limelightSubsystem::getYDistance),
                     new WaitCommand(1000),
-                    new ParallelCommandGroup(
-                            new IntakeCommands.SetRotationCmd(intakeSubsystem, limelightSubsystem::getAngle),
-                            new IntakeCommands.OpenScrewCmd(intakeSubsystem, true)
-                    ),
+                    new IntakeCommands.SetRotationCmd(intakeSubsystem, limelightSubsystem::getAngle),
+                    new WaitCommand(300),
+                    new IntakeCommands.OpenScrewCmd(intakeSubsystem, true),
+
 
                     new InstantCommand(new Runnable() {
                         @Override

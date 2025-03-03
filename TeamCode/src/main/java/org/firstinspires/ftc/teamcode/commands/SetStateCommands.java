@@ -45,6 +45,42 @@ public class SetStateCommands {
         }
     }
 
+    public static class HPIntakeStateCmd extends CommandBase {
+        @Override
+        public void initialize() {
+            Echo.setRobotState(RobotState.HPINTAKE);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
+
+    public static class AutoChamberStateCmd extends CommandBase {
+        @Override
+        public void initialize() {
+            Echo.setRobotState(RobotState.AUTOCHAMBER);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
+
+    public static class AutoIntakeStateCmd extends CommandBase {
+        @Override
+        public void initialize() {
+            Echo.setRobotState(RobotState.AUTOINTAKE);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
+
     public static class IntakeStateCmd extends CommandBase {
         @Override
         public void initialize() {
