@@ -27,7 +27,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     int positionCorrection = 0;
     private double targetPos = -1;
-    private final int maxArmLength = 1700;
+    private final int maxArmLength = 1900;
     public int minSlidesPos = 10;
 
     public final int manualTicksPerSecond = 785;

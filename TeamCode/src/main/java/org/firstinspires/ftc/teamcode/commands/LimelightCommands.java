@@ -32,7 +32,7 @@ public class LimelightCommands {
 
         @Override
         public void initialize() {
-//            limelight.startLimelight();
+            limelight.startLimelight();
             limelight.updateResults();
             mecanumDrive.setFieldOriented(false);
         }

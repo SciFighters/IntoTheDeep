@@ -540,22 +540,23 @@ public class IntakeCommands {
 
     public static class SampleSubmIntakeCmd extends SequentialCommandGroup {
         public SampleSubmIntakeCmd(IntakeSubsystem intakeSubsystem) {
+            this(intakeSubsystem, 0);
+        }
+
+        public SampleSubmIntakeCmd(IntakeSubsystem intakeSubsystem, double angle) {
             addCommands(
                     new ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
                     new WaitCommand(200),
-                    new OpenScrewCmd(intakeSubsystem, false)
+                    new SetRotationCmd(intakeSubsystem, angle),
+                    new WaitCommand((long) angle * 350),
+                    new OpenScrewCmd(intakeSubsystem, true),
+                    new RotateBackCmd(intakeSubsystem),
+                    new WaitCommand((long) Math.abs(angle - 0.5) * 350),
+                    new ClawStageCmd(intakeSubsystem, ClawStages.INTAKE)
             );
             addRequirements(intakeSubsystem);
         }
 
-        public SampleSubmIntakeCmd(IntakeSubsystem intakeSubsystem, boolean wait) {
-            addCommands(
-                    new ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
-                    new WaitCommand(200),
-                    new OpenScrewCmd(intakeSubsystem, wait)
-            );
-            addRequirements(intakeSubsystem);
-        }
     }
 
     public static class SampleGroundIntakeCmd extends SequentialCommandGroup {
@@ -691,6 +692,7 @@ public class IntakeCommands {
 
         @Override
         public boolean isFinished() {
+
             return !Transfer.transferring;
         }
     }

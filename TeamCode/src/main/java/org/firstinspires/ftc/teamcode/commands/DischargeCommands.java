@@ -279,7 +279,7 @@ public class DischargeCommands {
 
         public GoToTarget(DischargeSubsystem dischargeSubsystem, int target) {
             this.target = target;
-            addRequirements(dischargeSubsystem);
+//            addRequirements(dischargeSubsystem);
         }
 
         @Override
