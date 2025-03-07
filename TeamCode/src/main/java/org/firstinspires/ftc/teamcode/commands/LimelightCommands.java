@@ -24,14 +24,15 @@ public class LimelightCommands {
         LimelightSubsystem limelight;
         MecanumDrive mecanumDrive;
         public static double kp = 0.0008;
-        public static double minPower = 0.1;
-        public static double ki = 0.0;
-        public static double kd = 0.00005;
+        public static double minPower = 0.09;
+        public static double ki = 0;
+        public static double kd = -0.00005;
         double currentPipeline;
         double error, lastError;
         ElapsedTime elapsedTime = new ElapsedTime();
         double time, lastTime;
         double Integral = 0;
+        public static double derivative;
 
         public AlignXCmd(LimelightSubsystem limelight, MecanumDrive mecanumDrive) {
             this.limelight = limelight;
@@ -56,11 +57,14 @@ public class LimelightCommands {
             time = elapsedTime.seconds();
             error = limelight.getXDistance();
             double deltaTime = time - lastTime;
-            double proportional = error * kp;
-            Integral += error * deltaTime * ki;
-            double derivative = (lastError - error) * kd / deltaTime;
-            double feedForward = Math.signum(error) * minPower;
-            mecanumDrive.drive(proportional + Integral + derivative + feedForward, 0, 0, 0.5);
+            if (deltaTime > 0.01) {
+                double proportional = error * kp;
+                Integral += error * deltaTime * ki;
+                derivative = (lastError - error) * kd / deltaTime;
+                double feedForward = Math.signum(error) * minPower;
+                mecanumDrive.drive(proportional + Integral + derivative + feedForward, 0, 0, 0.5);
+            }
+
             lastTime = time;
             lastError = error;
         }

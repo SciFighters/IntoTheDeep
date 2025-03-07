@@ -46,8 +46,11 @@ public class LimelightSubsystem extends SubsystemBase {
     public int getYDistance() {
         updateResults();
         distance = Math.min(
-                (int) (((limelightH - sampleH) * Math.tan(Math.toRadians(-result.getPythonOutput()[1] / 240 * 42 + limelightAngle)) + distanceFromArmStart + 34.43) * tickPerCM)
-                , 2040);
+                (int) (((limelightH - sampleH) * Math.tan(Math.toRadians(-result.getPythonOutput()[1] / 240 * 42 + limelightAngle)) + distanceFromArmStart + 34.27) * tickPerCM)
+                , 2222);
+        if (distance > 1900) {
+            distance -= 100;
+        }
         alignedY = distance;
         return distance;
     }

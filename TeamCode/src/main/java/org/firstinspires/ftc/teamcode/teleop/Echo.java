@@ -410,12 +410,13 @@ public class Echo extends CommandOpMode {
 //                            new DischargeCommands.DischargeGotoCmd(dischargeSubsystem
 //                                    , dischargeSubsystem.highChamberHeight, multipleTelemetry))); //go to chamber
 
-        systemY.whenPressed(
-                new SequentialCommandGroup(
-                        new IntakeCommands.WaitForTransferEnd(),
-                        new SetStateCommands.BasketStateCmd(), //change to chamber state
-                        //new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight),
-                        new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highBasketHeight)));
+//        systemY.whenPressed(
+//                new SequentialCommandGroup(
+//                        new IntakeCommands.WaitForTransferEnd(),
+//                        new SetStateCommands.BasketStateCmd(), //change to chamber state
+//                        //new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight),
+//                        new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highBasketHeight)));
+        systemY.whenPressed(new LimelightCommands.AlignXCmd(limeLightSubsystem, mecanumDrive));
 
         systemA.whenPressed(
                 new SequentialCommandGroup(
@@ -491,6 +492,7 @@ public class Echo extends CommandOpMode {
         multipleTelemetry.addData("cm", limeLightSubsystem.getYDistance() / limeLightSubsystem.tickPerCM);
         multipleTelemetry.addData("fhd", limeLightSubsystem.alignedY);
         telemetry.addData("servo angle", 1 - (limeLightSubsystem.getAngle() + 90) / 180);
+        multipleTelemetry.addData("derivative", LimelightCommands.AlignXCmd.derivative);
 
 
 //        multipleTelemetry.addData("servo pos", intakeSubsystem.getZServoPosition());
