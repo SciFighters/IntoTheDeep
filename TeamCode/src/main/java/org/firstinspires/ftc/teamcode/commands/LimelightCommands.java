@@ -6,6 +6,9 @@ import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
+import com.arcrobotics.ftclib.controller.PIDController;
+import com.arcrobotics.ftclib.controller.PIDFController;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.ArmsStages;
 import org.firstinspires.ftc.teamcode.subsystems.ClawStages;
@@ -22,7 +25,13 @@ public class LimelightCommands {
         MecanumDrive mecanumDrive;
         public static double kp = 0.0008;
         public static double minPower = 0.1;
+        public static double ki = 0.0;
+        public static double kd = 0.00005;
         double currentPipeline;
+        double error, lastError;
+        ElapsedTime elapsedTime = new ElapsedTime();
+        double time, lastTime;
+        double Integral = 0;
 
         public AlignXCmd(LimelightSubsystem limelight, MecanumDrive mecanumDrive) {
             this.limelight = limelight;
@@ -32,14 +41,28 @@ public class LimelightCommands {
 
         @Override
         public void initialize() {
+            Integral = 0;
             limelight.startLimelight();
             limelight.updateResults();
             mecanumDrive.setFieldOriented(false);
+            error = limelight.getXDistance();
+            lastError = error;
+            lastTime = elapsedTime.seconds();
         }
 
         @Override
         public void execute() {
-            mecanumDrive.drive(limelight.getXDistance() * kp + Math.signum(limelight.getXDistance()) * minPower, 0, 0, 0.5);
+
+            time = elapsedTime.seconds();
+            error = limelight.getXDistance();
+            double deltaTime = time - lastTime;
+            double proportional = error * kp;
+            Integral += error * deltaTime * ki;
+            double derivative = (lastError - error) * kd / deltaTime;
+            double feedForward = Math.signum(error) * minPower;
+            mecanumDrive.drive(proportional + Integral + derivative + feedForward, 0, 0, 0.5);
+            lastTime = time;
+            lastError = error;
         }
 
         @Override
@@ -70,26 +93,7 @@ public class LimelightCommands {
             this.dischargeSubsystem = dischargeSubsystem;
             this.mecanumDrive = mecanumDrive;
             addCommands(
-//                    new InstantCommand(() -> {
-//                        while (limelightSubsystem.getYDistance() >= 1700) {
-//                            addCommands(new InstantCommand(() -> mecanumDrive.drive(-0.3, 0, 0, 0.2)).withTimeout(300));
-//                        }
-//                    }),
-                    new AlignXCmd(limelightSubsystem, mecanumDrive)/*.withTimeout(1000)*/,
-                    new WaitCommand(100),
-                    new IntakeCommands.StartIntakeCmd(intakeSubsystem, limelightSubsystem::getYDistance),
-                    new WaitCommand(1000),
-                    new ParallelCommandGroup(
-
-                            new IntakeCommands.SetRotationCmd(intakeSubsystem, limelightSubsystem::getAngle),
-                            new SequentialCommandGroup(
-                                    new WaitCommand(200),
-                                    new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
-                                    new IntakeCommands.OpenScrewCmd(intakeSubsystem, true)
-
-                            )
-                    ),
-                    new WaitCommand(500),
+                    new LimelightStartIntake(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive),
                     new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem));
             addRequirements(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive);
         }
@@ -115,6 +119,7 @@ public class LimelightCommands {
         MecanumDrive mecanumDrive;
         double wantedAngle;
         boolean outOfRange = false;
+        double angle;
 
         public LimelightStartIntake(LimelightSubsystem limelightSubsystem, IntakeSubsystem intakeSubsystem, DischargeSubsystem dischargeSubsystem, MecanumDrive mecanumDrive) {
             this.intakeSubsystem = intakeSubsystem;
@@ -128,12 +133,21 @@ public class LimelightCommands {
 //                        }
 //                    }),
                     new AlignXCmd(limelightSubsystem, mecanumDrive)/*.withTimeout(1000)*/,
+                    new AlignXCmd(limelightSubsystem, mecanumDrive).withTimeout(250),
                     new WaitCommand(100),
-                    new IntakeCommands.StartIntakeCmd(intakeSubsystem, limelightSubsystem::getYDistance),
+                    new InstantCommand(() -> {
+                        double position = (limelightSubsystem.getAngle() > 0) ? limelightSubsystem.getAngle() : 180 + limelightSubsystem.getAngle();
+                        angle = ((position / 180 - 0.5) * 2 / 3 + 0.5);
+                        if (angle > 0.75) {
+                            angle = 0;
+                        }
+                    }),
+                    new IntakeCommands.StartIntakeCmd(intakeSubsystem, limelightSubsystem::getYDistance, angle > 0.5),
                     new WaitCommand(1000),
-                    new IntakeCommands.SetRotationCmd(intakeSubsystem, limelightSubsystem::getAngle),
-                    new WaitCommand(300),
-                    new IntakeCommands.OpenScrewCmd(intakeSubsystem, true),
+//                    new IntakeCommands.SetRotationCmd(intakeSubsystem, limelightSubsystem::getAngle),
+//                    new WaitCommand(300),
+//                    new IntakeCommands.OpenScrewCmd(intakeSubsystem, true),
+                    new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem, limelightSubsystem::getAngle),
 
 
                     new InstantCommand(new Runnable() {

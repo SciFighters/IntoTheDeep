@@ -76,12 +76,12 @@ public class AutoUtils {
                 dischargeGotoChamber(dischargeSubsystem));
     }
 
-    public static SequentialCommandGroup goToHPFromSub(MecanumDrive mecanumDrive, DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
-        return new SequentialCommandGroup(new MecanumCommands.ConstantVelocityGoPastCmd(telemetry, mecanumDrive, 3, 1.5, 0, 0.01, 1, true),
-                new MecanumCommands.ConstantVelocityGoPastCmd(telemetry, mecanumDrive, 3, 0.7, 0, 0.01, 1, true),
-                new MecanumCommands.SetRotationCmd(mecanumDrive, 0),
-                new DischargeCommands.HpDischarge(dischargeSubsystem));
-    }
+//    public static SequentialCommandGroup goToHPFromSub(MecanumDrive mecanumDrive, DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
+//        return new SequentialCommandGroup(new MecanumCommands.ConstantVelocityGoPastCmd(telemetry, mecanumDrive, 3, 1.5, 0, 0.01, 1, true),
+//                new MecanumCommands.ConstantVelocityGoPastCmd(telemetry, mecanumDrive, 3, 0.7, 0, 0.01, 1, true),
+//                new MecanumCommands.SetRotationCmd(mecanumDrive, 0),
+//                new DischargeCommands.HpDischarge(dischargeSubsystem));
+//    }
 
     public static CommandBase goToHPFromChamber(MecanumDrive mecanumDrive, Telemetry telemetry) {
         return new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 2.5, 0.55, -45, 0.03, 1);

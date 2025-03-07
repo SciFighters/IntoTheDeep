@@ -108,9 +108,9 @@ public class MecanumCommands {
             fieldSpeeds = mecanumDrive.calcDriveSpeeds(xD.get(), yD.get());
             xSum = Range.clip(fieldSpeeds.vxMetersPerSecond + xS.get() * 0.45, -1, 0.8);
             ySum = Range.clip(fieldSpeeds.vyMetersPerSecond + yS.get() * 0.45, -1, 0.8);
-            rSum = fieldSpeeds.omegaRadiansPerSecond;
+            rSum = rS.get();
             mecanumDrive.setFieldOriented(false);
-            mecanumDrive.drive(xSum, ySum, rSum, boost.get());
+            mecanumDrive.drive(xSum, ySum, rSum * 0.75, boost.get());
         }
 
         @Override
@@ -457,71 +457,83 @@ public class MecanumCommands {
         double sensitivity;
         double rotation = 0;
         double minPower = 0.04;
+        double swapDistance;
         MecanumDrive mecanumDrive;
         Telemetry telemetry;
-        boolean noRotation = false;
-        final double speed;
+        final double speed1, speed2;
         double lastDistance = 23;
+        double minError = Integer.MAX_VALUE;
 
         public ConstantVelocityGoPastCmd(Telemetry telemetry, MecanumDrive mecanumDrive, double x, double y,
-                                         double wantedAngle, double sensitivity, double speed) {
+                                         double wantedAngle, double sensitivity, double speed1, double speed2, double swapDistance) {
             this.x = x;
             this.y = y;
             this.wantedAngle = wantedAngle;
-            this.speed = speed;
+            this.speed1 = speed1;
+            this.speed2 = speed2;
             this.sensitivity = sensitivity;
             this.mecanumDrive = mecanumDrive;
             this.telemetry = telemetry;
             this.wantedDistance = -1;
-
-            addRequirements(mecanumDrive);
-        }
-
-        public ConstantVelocityGoPastCmd(Telemetry telemetry, MecanumDrive mecanumDrive, double x, double y,
-                                         double wantedAngle, double sensitivity, double speed, boolean noRotation) {
-            this.x = x;
-            this.y = y;
-            this.wantedAngle = wantedAngle;
-            this.speed = speed;
-            this.sensitivity = sensitivity;
-            this.mecanumDrive = mecanumDrive;
-            this.telemetry = telemetry;
-            this.wantedDistance = -1;
-            this.noRotation = noRotation;
+            this.swapDistance = swapDistance;
 
             addRequirements(mecanumDrive);
         }
 
         @Override
         public void execute() {
+
+
             currentPos = mecanumDrive.getPosition();
             double[] localVector = {x - currentPos.x, y - currentPos.y};
             double MovementAngle = Math.atan2(localVector[0], localVector[1]);
-            double length = Range.clip(speed, -1, 1);
-            length += Math.signum(length) * minPower;
+            double length;
+            if (Math.hypot(localVector[0], localVector[1]) > swapDistance) {
+                length = Range.clip(speed1, -1, 1);
+                length += Math.signum(length) * minPower;
+            } else {
+                length = Range.clip(speed2, -1, 1);
+                length += Math.signum(length) * minPower;
+            }
+
             localVector[0] = Math.sin(MovementAngle) * length;
             localVector[1] = Math.cos(MovementAngle) * length;
             rotation = Utils.calcDeltaAngle(wantedAngle + 180, mecanumDrive.getAdjustedHeading()) * kp;
 
+            mecanumDrive.drive(localVector[0], localVector[1], (rotation / boost) * 0.5, boost);
 
-            if (noRotation) {
-                mecanumDrive.drive(localVector[0], localVector[1], 0, boost);
-
-            } else {
-                mecanumDrive.drive(localVector[0], localVector[1], (rotation / boost) * 0.5, boost);
-            }
 
         }
 
         @Override
         public boolean isFinished() {
-            double distance = Math.hypot(currentPos.x - x, currentPos.y - y);
-            boolean finished = (((Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) || (900 <= wantedDistance))
-                    && ((Math.abs(wantedAngle + 180 - mecanumDrive.getAdjustedHeading()) < 10) || noRotation)) || (distance > lastDistance && distance < 0.25);
+            double error = Math.hypot(currentPos.x - x, currentPos.y - y);
+            if (error < minError)
+                minError = error;
+            boolean finished = (minError < 0.1) && (error > minError + sensitivity) && (Math.abs(wantedAngle + 180 - mecanumDrive.getAdjustedHeading()) < 20);
             if (currentPos == null) return false;
 
-            lastDistance = distance;
             return finished;
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            //mecanumDrive.drive(0, 0, 0, 0);
+        }
+    }
+
+    public static class StopCmd extends CommandBase {
+        MecanumDrive mecanumDrive;
+
+        public StopCmd(MecanumDrive mecanumDrive) {
+            this.mecanumDrive = mecanumDrive;
+            addRequirements(mecanumDrive);
+        }
+
+
+        @Override
+        public boolean isFinished() {
+            return true;
         }
 
         @Override
@@ -624,10 +636,18 @@ public class MecanumCommands {
         double error = 0, lastError = 0, proportional, lastTime = 0, Integral, derivative;
         public static double kp = 0.01, ki = 0.0005, kd = -0.006;//0.025
         MecanumDrive mecanumDrive;
+        boolean end = false;
 
         public SetRotationCmd(MecanumDrive mecanumDrive, double wantedHeading) {
             this.mecanumDrive = mecanumDrive;
             this.wantedHeading = wantedHeading;
+            addRequirements(mecanumDrive);
+        }
+
+        public SetRotationCmd(MecanumDrive mecanumDrive, double wantedHeading, boolean end) {
+            this.mecanumDrive = mecanumDrive;
+            this.wantedHeading = wantedHeading;
+            this.end = end;
             addRequirements(mecanumDrive);
         }
 
@@ -655,7 +675,7 @@ public class MecanumCommands {
 
         @Override
         public boolean isFinished() {
-            return false;
+            return (end && Math.abs(wantedHeading + 180 - mecanumDrive.getAdjustedHeading()) < 10);
         }
 
         @Override
@@ -703,6 +723,26 @@ public class MecanumCommands {
         @Override
         public void initialize() {
             mecanumDrive.setMoverServo(pos);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
+
+    public static class MoverWentWentCmd extends CommandBase {
+        MecanumDrive mecanumDrive;
+        double pos;
+
+        public MoverWentWentCmd(MecanumDrive mecanumDrive, double pos) {
+            this.mecanumDrive = mecanumDrive;
+            this.pos = pos;
+        }
+
+        @Override
+        public void initialize() {
+            mecanumDrive.setWentWentServo(pos);
         }
 
         @Override

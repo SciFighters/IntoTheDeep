@@ -4,10 +4,8 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandOpMode;
-import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.ParallelDeadlineGroup;
-import com.arcrobotics.ftclib.command.ParallelRaceGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -50,84 +48,95 @@ public class ChamberOnly extends CommandOpMode {
 
         schedule(new SequentialCommandGroup(
 
-                chamberDiscahrge(1.78, 0),
+                chamberDischarge(1.78, 0),
 
                 new ParallelCommandGroup(
 
                         new SequentialCommandGroup(
-                                goToTwoSpeeds(1.84, 0.82, 0, 0.05, 0.65, 0.65, 0),
+                                goPast2Speeds(1.8, 0.83, 0, 0.01, 0.65, 0.65, 0),
 
-                                goToTwoSpeeds(2.5, 0.82, 0, 0.06, 0.8, 0.6, 0.15),
+                                goPast2Speeds(2.4, 0.83, 0, 0.01, 0.9, 0.6, 0.15),
 
-                                //new MecanumCommands.SetRotationCmd(mecanumDrive, -90),
-                                goToTwoSpeeds(2.92, 1.4, -90, 0.05, 0.65, 0.5, 0.15), //behind sample
-                                goToTwoSpeeds(2.94, 0.7, -90, 0.08, 0.8, 0.65, 0.2), //observation
 
-                                goToTwoSpeeds(3, 1.3, -90, 0.1, 0.8, 0.34, 0.15) //go back fast
-//                                goToTwoSpeeds(3, 1.22, -90, 0.05, 0.8, 0.34, 0.12) //go back fast
+                                goTo(2.69, 1.14, -90, 0.035, 0.7),
+                                moverWentWent(0.45),
+                                wait(375),
+
+                                //goPast2Speeds(2.8, 0.72, -90, 0.02, 0.8, 0.65, 0.2), //observation
+                                goToTwoSpeeds(2.72, 0.61, -90, 0.08, 0.8, 0.7, 0.2), //observation
+                                moverWentWent(1),
+
+                                goToTwoSpeeds(3.02, 1.3, -90, 0.1, 0.8, 0.35, 0.15) //go back fast
+
+//                                goToTwoSpeeds(2.84, 0.94, -90, 0.01, 0.8, 0.5, 0.2), //go back fast
+//
+//                                new ParallelCommandGroup(
+//                                        new SequentialCommandGroup(
+//                                                moverWentWent(0.5),
+//                                                wait(500))
+//                                ),
+//
+//                                //goPast2Speeds(2.9, 0.72, -90, 0.02, 0.8, 0.65, 0.2), //observation
+//                                goToTwoSpeeds(2.82, 0.7, -90, 0.08, 0.7, 0.65, 0.2), //observation
+//                                moverWentWent(1)
+//                                goTo(2.97, 1.08, -90, 0.03, 0.7), //go back fast
+//
+//                                new SequentialCommandGroup(
+//                                    moverWentWent(0.5),
+//                                    wait(500)
+//                                ),
+//
+//                                goPast2Speeds(2.97, 0.5, -90, 0.02, 0.8, 0.45, 0.15),
+//                                moverWentWent(0)
                         ),
 
-//                        new SequentialCommandGroup(
-//                                goToTwoSpeeds(1.96, 0.82, -15, 0.045, 0.7, 0.7, 0),
-//                                new ParallelCommandGroup(
-//                                        new SequentialCommandGroup(
-//                                                moverGoGo(0.3),
-//                                                wait(450), moverGoGo(0.5)),
-//                                        goToTwoSpeeds(2.5, 0.83, -97, 0.06, 0.8, 0.65, 0.2)),
-//                                goToTwoSpeeds(2.6, 0.9, -120, 0.06, 0.8, 0.5, 0.15),
-//
-//
-//                                //goToTwoSpeeds(2.6, 0.88, -118, 0.045, 0.65, 0.55, 0.2),
-//
-//                                //moverGoGo(0.42),
-//
-//                                //goToTwoSpeeds(2.94, 1.4, -90, 0.05, 0.5, 0.35, 0.12), //behind sample
-//
-//                                new ParallelCommandGroup(
-//                                        new SequentialCommandGroup(
-//                                                wait(600), moverGoGo(0.35)),
-//                                        goToTwoSpeeds(2.8, 0.42, -90, 0.08, 0.8, 0.7, 0.2)), //observation
-//
-//
-//                                new ParallelCommandGroup(
-//                                        new SequentialCommandGroup(
-//                                                moverGoGo(0.38),
-//                                                wait(200), moverGoGo(0.15)),
-//                                        goToTwoSpeeds(2.96, 1.22, -90, 0.06, 0.8, 0.34, 0.17))  //behind sample
-//                        ),
                         new DischargeCommands.GoHomeCmd(dischargeSubsystem)
 
                 ),
 
-
                 new SequentialCommandGroup(//special movement for fast intake here:
 
-                        moverGoGo(0.45),
+                        moverGoGo(0.435),
                         new ParallelCommandGroup(
                                 new SequentialCommandGroup(
-                                        wait(500), moverGoGo(0.385),
+                                        wait(500), moverGoGo(0.375),
                                         wait(500), moverGoGo(0.3)),
-                                goTo(2.6, 0.22, -90, 0.04, 1),//intake position
+                                goTo(2.6, 0.22, -90, 0.04, 1), //intake position
                                 new SequentialCommandGroup(
                                         wait(400),
-                                        new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 1700))
-                        ),
-                        goTo(2.7, 0.22, -90, 0.04, 1),
+                                        new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 2050))),
+                        //goTo(2.7, 0.22, -90, 0.04, 1),
                         new IntakeCommands.SampleGroundIntakeCmd(intakeSubsystem),
                         moverGoGo(0.5)
 
                 ),
 
+//                new SequentialCommandGroup(//special movement for fast intake here:
+//                        new ParallelCommandGroup(
+//                                goTo(2.7, 0.22, -90, 0.04, 1),//intake position
+//                                new SequentialCommandGroup(
+//                                        wait(400),
+//                                        new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 1500))
+//                        ),
+//                        new IntakeCommands.SampleGroundIntakeCmd(intakeSubsystem)
+//
+//                ),
 
-                chamberDiscahrge(1.8, 2),
+
+                chamberDischarge(1.83, 2),
                 hpIntake(),
-                chamberDiscahrge(1.8, 1),
+                chamberDischarge(1.83, 1),
                 hpIntake(),
-                chamberDiscahrge(1.8, 1)
+                chamberDischarge(1.83, 1),
+
+                new ParallelCommandGroup(
+                        new DischargeCommands.GoHomeCmd(dischargeSubsystem),
+                        goToTwoSpeeds(2.5, 0.24, -90, 0.08, 1, 0.4, 0.15)) //go back fast
+
         ));
     }
 
-    public CommandBase chamberDiscahrge(double dischargeX, int transferMode) {
+    public CommandBase chamberDischarge(double dischargeX, int transferMode) {
 
         if (transferMode == 0) {
             return new SequentialCommandGroup(
@@ -147,12 +156,12 @@ public class ChamberOnly extends CommandOpMode {
                     new ParallelCommandGroup(
                             new SequentialCommandGroup(
                                     new IntakeCommands.AutoTransfer(intakeSubsystem, dischargeSubsystem),
-                                    new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight)),
-                            new SequentialCommandGroup(
-                                    wait(700),
-                                    goTo(dischargeX, 0.86, -10, 0.06, 1.3))),
+                                    new DischargeCommands.GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight)),
 
-                    new DischargeCommands.GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight),
+                            goTo(dischargeX, 0.87, 0, 0.05, 1.3)),
+                    //goPast2Speeds(dischargeX+0.03, 0.88, 0, 0.01, 1, 0.7, 0.15)),
+
+                    //new DischargeCommands.GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight),
                     dischargeAction(dischargeX)
 
             );
@@ -162,15 +171,14 @@ public class ChamberOnly extends CommandOpMode {
                     new ParallelCommandGroup(
                             new SequentialCommandGroup(
                                     new IntakeCommands.AutoTransfer(intakeSubsystem, dischargeSubsystem),
-                                    new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight)),
+                                    new DischargeCommands.GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight)),
                             new SequentialCommandGroup(
-                                    wait(500),
-                                    goTo(dischargeX, 0.76, 0, 0.08, 1.3),
-                                    moverGoGo(0.08),
-                                    goTo(dischargeX, 0.86, 0, 0.05, 1.3))),
+                                    wait(300),
+                                    goTo(dischargeX, 0.87, 0, 0.08, 1.3),
+                                    moverGoGo(0))),
 
 
-                    new DischargeCommands.GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight),
+                    //new DischargeCommands.GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight),
                     dischargeAction(dischargeX)
             );
         }
@@ -183,7 +191,7 @@ public class ChamberOnly extends CommandOpMode {
                         new WaitCommand(600),//Todo: make time the minimum possible
                         new DischargeCommands.AutoChamberDischargeCmd(dischargeSubsystem, telemetry)
                 ),
-                goToConstVelocity(dischargeX, 1.5, 0, 0.03, 0.5).withTimeout(5000)
+                goToConstVelocity(dischargeX, 3, 0, 0.03, 0.5).withTimeout(5000)
         );
     }
 
@@ -191,9 +199,9 @@ public class ChamberOnly extends CommandOpMode {
         return new SequentialCommandGroup(
                 new ParallelCommandGroup(
                         new DischargeCommands.GoHomeCmd(dischargeSubsystem),
-                        goTo(2.5, 0.55, -45, 0.03, 1),
-                        new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 1780)),
-                new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem)
+                        goTo(2.4, 0.58, -42, 0.03, 0.8),
+                        new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 2050)),
+                new IntakeCommands.SampleGroundIntakeCmd(intakeSubsystem)
 
         );
     }
@@ -201,6 +209,13 @@ public class ChamberOnly extends CommandOpMode {
     private CommandBase goToConstVelocity(double x, double y,
                                           double wantedAngle, double sensitivity, double speed) {
         return new MecanumCommands.ConstantVelocityGotoCmd(telemetry, mecanumDrive, x, y, wantedAngle, sensitivity, speed);
+//        return new MecanumCommands.GotoCmd()
+
+    }
+
+    private CommandBase goPast2Speeds(double x, double y,
+                                      double wantedAngle, double sensitivity, double speed1, double speed2, double swapDistance) {
+        return new MecanumCommands.ConstantVelocityGoPastCmd(telemetry, mecanumDrive, x, y, wantedAngle, sensitivity, speed1, speed2, swapDistance);
 //        return new MecanumCommands.GotoCmd()
 
     }
@@ -220,9 +235,14 @@ public class ChamberOnly extends CommandOpMode {
         return new WaitCommand(mills);
     }
 
+    private CommandBase moverWentWent(double moveTo) {
+        return new MecanumCommands.MoverWentWentCmd(mecanumDrive, moveTo);
+    }
+
     private CommandBase moverGoGo(double moveTo) {
         return new MecanumCommands.MoverServoCmd(mecanumDrive, moveTo);
     }
+
 
     @Override
     public void run() {

@@ -176,6 +176,8 @@ public class Echo extends CommandOpMode {
                 case CHAMBER:
                     chamberBindings();
                     break;
+                case AUTOINTAKE:
+
             }
         }
         if (driverX.get() && driverStart.get()) {
@@ -230,6 +232,7 @@ public class Echo extends CommandOpMode {
         systemBack.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
 
         driverBack.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
+        driverRightBumper.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setWentWentServo(0.5)), new InstantCommand(() -> mecanumDrive.setWentWentServo(1)));
 
     }
 
@@ -291,11 +294,11 @@ public class Echo extends CommandOpMode {
                 () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) * 0.5 + 0.3));
 
         intakeSubsystem.setDefaultCommand(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem,
-                systemGamepad::getLeftY));
+                () -> systemGamepad.getLeftY() * (1 - 0.6 * systemGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER))));
 
         systemA.whenPressed(new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem));/*.and(new Trigger(() -> IntakeCommands.Transfer.transferring))*/
 
-        systemB.whenPressed(new IntakeCommands.RestartIntakeCmd(intakeSubsystem));
+        systemB.whenPressed(new IntakeCommands.RestartIntakeCmd(intakeSubsystem)).and(new Trigger(() -> !systemStart.get()));
 
 //                    systemY.whenPressed(new SequentialCommandGroup(
 //                            new IntakeCommands.ReturnArmForHMCmd(intakeSubsystem),
@@ -314,9 +317,10 @@ public class Echo extends CommandOpMode {
 //                                    (1 - (limeLightSubsystem.getAngle() + 90) / 180 - 0.5) * 2 / 3 + 0.5)
 //                    );
 
-        systemDPadDown.whenPressed(new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem, 1));
+        systemDPadDown.whenPressed(new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem, 0.5));
         systemDPadUp.whenPressed(new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem, 0));
-        systemDPadLeft.whenPressed(new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem, 0.5));
+        systemDPadLeft.whenPressed(new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem, 0.25));
+        systemDPadRight.whenPressed(new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem, 0.75));
 
 //        systemDPadUp.whenPressed(new SequentialCommandGroup(
 //                new IntakeCommands.SetRotationCmd(intakeSubsystem, 0),
@@ -349,6 +353,8 @@ public class Echo extends CommandOpMode {
     }
 
     public void noneBindings() {
+        driverRightBumper.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setWentWentServo(0.5)), new InstantCommand(() -> mecanumDrive.setWentWentServo(1)));
+
         driverLeftStick.whenPressed(() -> limeLightSubsystem.limelight.captureSnapshot("la shot"));
 
         systemLeftStick.whenPressed(new DischargeCommands.ResetDischarge(dischargeSubsystem));
@@ -423,8 +429,10 @@ public class Echo extends CommandOpMode {
                 new LimelightCommands.LimelightStartIntake(limeLightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive),
                 new SetStateCommands.IntakeStateCmd()
         ));
-        systemB.whenPressed(new IntakeCommands.SlideUntilCmd(intakeSubsystem, 1500, 0.8, true));
-        systemB.whenReleased(new SequentialCommandGroup(new SetStateCommands.IntakeStateCmd(), new IntakeCommands.StartIntakeCmd(intakeSubsystem)));
+//        systemX.whenPressed(new LimelightCommands.AlignXCmd(limeLightSubsystem,mecanumDrive));
+//        systemB.whenPressed(new IntakeCommands.SlideUntilCmd(intakeSubsystem, 1500, 0.8, true));
+        systemB.whenPressed(new SequentialCommandGroup(new SetStateCommands.IntakeStateCmd(),
+                new IntakeCommands.StartIntakeCmd(intakeSubsystem))).and(new Trigger(() -> !systemStart.get()));
 
 //                    systemLeftStick.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
 //                    systemRightStick.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
@@ -464,6 +472,7 @@ public class Echo extends CommandOpMode {
 
         //---intake---
         telemetry.addLine("---intake---");
+        telemetry.addData("home", intakeSubsystem.isHome());
         multipleTelemetry.addData("transferring", IntakeCommands.Transfer.transferring);
         multipleTelemetry.addData("tick avg", intakeSubsystem.getAveragePosition() / 435.0 * 1150 / 58 * 46);
         multipleTelemetry.addData("tick 1", intakeSubsystem.getMotorPosition() / 435.0 * 1150 / 58 * 46);

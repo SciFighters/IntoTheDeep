@@ -24,26 +24,24 @@ public class LimeLightOpMode extends LinearOpMode {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
         // Ensure telemetry is transmitted at regular intervals
-        telemetry.setMsTransmissionInterval(50);
+        telemetry.setMsTransmissionInterval(11);
 
         // Initialize Limelight camera and ensure it's started
-        limelight.shutdown(); // Stop the Limelight to reset it
-        limelight.start(); // Start it again for the current run
-        limelight.pipelineSwitch(9);
+//        limelight.shutdown(); // Stop the Limelight to reset it
+        // Start it again for the current run
+        limelight.pipelineSwitch(7);
+        limelight.start();
 //        limelight.pipelineSwitch(Pipelines.BLUE.PIPELINE); // Switch to the blue pipeline
         sleep(100); // Give the Limelight time to switch pipeline
 
         waitForStart(); // Wait for the start of the teleop period
 
         while (opModeIsActive()) {
-            // If needed, switch pipeline (uncomment to use pipeline switching)
-            // limelight.pipelineSwitch(pipeLine);
+
             sleep(100); // Give a small delay after each pipeline switch if switching frequently
 
-            // Get the latest result from the Limelight
             LLResult result = limelight.getLatestResult();
 
-            // Check if result is valid and display telemetry
             if (result != null) {
                 multipleTelemetry.addData("0", result.getPythonOutput()[0]);
                 multipleTelemetry.addData("1", result.getPythonOutput()[1]);

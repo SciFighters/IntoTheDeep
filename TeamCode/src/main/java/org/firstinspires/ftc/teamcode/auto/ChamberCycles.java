@@ -140,12 +140,12 @@ public class ChamberCycles extends CommandOpMode {
 
     }
 
-    private CommandBase goPastConstVelocity(double x, double y,
-                                            double wantedAngle, double sensitivity, double speed) {
-        return new MecanumCommands.ConstantVelocityGoPastCmd(telemetry, mecanumDrive, x, y, wantedAngle, sensitivity, speed);
-//        return new MecanumCommands.GotoCmd()
-
-    }
+//    private CommandBase goPastConstVelocity(double x, double y,
+//                                            double wantedAngle, double sensitivity, double speed) {
+//        return new MecanumCommands.ConstantVelocityGoPastCmd(telemetry, mecanumDrive, x, y, wantedAngle, sensitivity, speed);
+////        return new MecanumCommands.GotoCmd()
+//
+//    }
 
     private CommandBase goToTwoSpeeds(double x, double y,
                                       double wantedAngle, double sensitivity, double speed1, double speed2, double swap) {

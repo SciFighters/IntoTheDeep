@@ -27,7 +27,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     int positionCorrection = 0;
     private double targetPos = -1;
-    private final int maxArmLength = 1900;
+    private final int maxArmLength = 2050;
     public int minSlidesPos = 10;
 
     public final int manualTicksPerSecond = 785;
@@ -36,7 +36,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public boolean end = false;
     TouchSensor leftTouch, rightTouch;
     ElapsedTime screwTimer = new ElapsedTime();
-    public final double openScrewTime = 0.2;
+    public final double openScrewTime = 0.275;
 
 
 
@@ -101,7 +101,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public double getAveragePosition() {
-        return ((double) rMotor.getCurrentPosition() + (double) lMotor.getCurrentPosition()) / 2 + positionCorrection;
+        return ((double) rMotor.getCurrentPosition() + (double) rMotor.getCurrentPosition()) / 2 + positionCorrection;
     }
 
     public void setRotationServoPosition(double position) {
@@ -117,11 +117,11 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public int getMotorPosition() {
-        return lMotor.getCurrentPosition() + positionCorrection;
+        return rMotor.getCurrentPosition() + positionCorrection;
     }
 
     public int getMotor2Position() {
-        return lMotor.getCurrentPosition() + positionCorrection;
+        return rMotor.getCurrentPosition() + positionCorrection;
     }
 
     public void setPositionCorrection(int pos) {
@@ -163,11 +163,11 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public double getCurrent() {
-        return (lMotor.getCurrent(CurrentUnit.AMPS) + lMotor.getCurrent(CurrentUnit.AMPS)) / 2;
+        return (rMotor.getCurrent(CurrentUnit.AMPS) + rMotor.getCurrent(CurrentUnit.AMPS)) / 2;
     }
 
     public double getPower() {
-        return (rMotor.getPower() + lMotor.getPower()) / 2;
+        return (rMotor.getPower() + rMotor.getPower()) / 2;
     }
 
 

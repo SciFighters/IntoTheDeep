@@ -226,10 +226,10 @@ public class IntakeCommands {
 
         @Override
         public void initialize() {
-            if (intakeSubsystem.getZServoPosition() < 0.5)
-                intakeSubsystem.setRotationServoPosition(0);
-            else
+            if (intakeSubsystem.getZServoPosition() > 0.5)
                 intakeSubsystem.setRotationServoPosition(1);
+            else
+                intakeSubsystem.setRotationServoPosition(0);
         }
 
         @Override
@@ -412,7 +412,7 @@ public class IntakeCommands {
 
     //if doesnt work check if everything needs to not have addRequirements(subsystem);
     public static class StartIntakeCmd extends SequentialCommandGroup {
-        private final int pos = 1500;
+        private final int pos = 1200;
 
         public StartIntakeCmd(IntakeSubsystem subsystem) {
             StartIntake(subsystem, false, pos);
@@ -426,11 +426,12 @@ public class IntakeCommands {
             StartIntake(subsystem, auto, position);
         }
 
-        public StartIntakeCmd(IntakeSubsystem subsystem, Supplier<Integer> position) {
+        public StartIntakeCmd(IntakeSubsystem subsystem, Supplier<Integer> position, boolean magniv) {
 //            StartIntake(subsystem, auto, position);
+            int angle = magniv ? 1 : 0;
             addCommands(
                     new ClawStageCmd(subsystem, ClawStages.UPPER),
-                    new SetRotationCmd(subsystem, 0),
+                    new SetRotationCmd(subsystem, angle),
                     new SlideGotoCmd(subsystem, position),
                     new ClawStageCmd(subsystem, ClawStages.LOWER));
 
@@ -546,12 +547,35 @@ public class IntakeCommands {
         public SampleSubmIntakeCmd(IntakeSubsystem intakeSubsystem, double angle) {
             addCommands(
                     new ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
-                    new WaitCommand(200),
+                    new WaitCommand(100),
                     new SetRotationCmd(intakeSubsystem, angle),
-                    new WaitCommand((long) angle * 350),
+                    new WaitCommand((long) angle * 325),
                     new OpenScrewCmd(intakeSubsystem, true),
+                    new ClawStageCmd(intakeSubsystem, ClawStages.ROTATE),
+                    new WaitCommand(500),
                     new RotateBackCmd(intakeSubsystem),
-                    new WaitCommand((long) Math.abs(angle - 0.5) * 350),
+                    new WaitCommand((long) Math.abs(angle - 0.5) * 500),
+                    new ClawStageCmd(intakeSubsystem, ClawStages.INTAKE)
+            );
+            addRequirements(intakeSubsystem);
+        }
+
+        public SampleSubmIntakeCmd(IntakeSubsystem intakeSubsystem, Supplier<Double> angle) {
+            double position = (angle.get() > 0) ? angle.get() : 180 + angle.get();
+            double wanted = ((position / 180 - 0.5) * 2 / 3 + 0.5);
+            if (wanted > 0.75) {
+                wanted = 0;
+            }
+            addCommands(
+                    new ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
+                    new WaitCommand(100),
+                    new SetRotationCmd(intakeSubsystem, angle),
+                    new WaitCommand((long) wanted * 400),
+                    new OpenScrewCmd(intakeSubsystem, true),
+                    new ClawStageCmd(intakeSubsystem, ClawStages.ROTATE),
+                    new WaitCommand(500),
+                    new RotateBackCmd(intakeSubsystem),
+                    new WaitCommand((long) Math.abs(wanted - 0.5) * 500),
                     new ClawStageCmd(intakeSubsystem, ClawStages.INTAKE)
             );
             addRequirements(intakeSubsystem);
@@ -568,9 +592,13 @@ public class IntakeCommands {
                     holdingPower = 0.07;
 
 
-            addCommands(new ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
-                    new WaitCommand(200),
-                    new OpenScrewCmd(intakeSubsystem, false));
+            addCommands(
+                    new ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
+                    new WaitCommand(100),
+                    new SetRotationCmd(intakeSubsystem, 0),
+                    new OpenScrewCmd(intakeSubsystem, true),
+                    new RotateBackCmd(intakeSubsystem),
+                    new ClawStageCmd(intakeSubsystem, ClawStages.INTAKE));
             addRequirements(intakeSubsystem);
         }
     }//todo: remove later
@@ -625,7 +653,7 @@ public class IntakeCommands {
                     new SetPowerCmd(intakeSubsystem, -0.18),
                     //new Wait(intakeSubsystem, 0.1), //for safety
                     new DischargeGrabCmd(dischargeSubsystem),
-                    new CloseScrewCmd(intakeSubsystem, true),
+                    new CloseScrewCmd(intakeSubsystem, false),
                     new SetPowerCmd(intakeSubsystem, 0),
                     new SlideUntilCmd(intakeSubsystem, intakeSubsystem.minSlidesPos + slidesBackAfterTransfer + 40, 0.4, false)
             );

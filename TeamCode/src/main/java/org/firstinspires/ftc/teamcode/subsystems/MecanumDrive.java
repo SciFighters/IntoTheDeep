@@ -29,8 +29,9 @@ import org.opencv.core.Point;
 
 public class MecanumDrive extends SubsystemBase {
     public DcMotorEx fl, fr, bl, br;
-//    public Servo moverGoGo;
-public Servo moverServo;
+    //    public Servo moverGoGo;
+    public Servo moverServo;
+    public Servo wentWentServo;
     DistanceSensor distanceSensor;
     MecanumDriveKinematics kinematics;
     BNO055IMU imu;
@@ -54,6 +55,7 @@ public Servo moverServo;
     public MecanumDrive(MultipleTelemetry telemetry, HardwareMap hm, LinearOpMode opMode) {
         this.telemetry = telemetry;
         moverServo = hm.get(Servo.class, "movergogo");
+        wentWentServo = hm.get(Servo.class, "moverwentwent");
         fl = hm.get(DcMotorEx.class, "fl_motor");
         fr = hm.get(DcMotorEx.class, "fr_motor");
         br = hm.get(DcMotorEx.class, "br_motor");
@@ -99,6 +101,7 @@ public Servo moverServo;
         this.opMode = opMode;
         this.telemetry = telemetry;
         moverServo = hm.get(Servo.class, "movergogo");
+        wentWentServo = hm.get(Servo.class, "moverwentwent");
         fl = hm.get(DcMotorEx.class, "fl_motor");
         fr = hm.get(DcMotorEx.class, "fr_motor");
         br = hm.get(DcMotorEx.class, "br_motor");
@@ -260,6 +263,10 @@ public Servo moverServo;
 
     public void setMoverServo(double pos) {
         moverServo.setPosition(pos);
+    }
+
+    public void setWentWentServo(double pos) {
+        wentWentServo.setPosition(pos);
     }
 
     public void resetPos(Point pos) {
