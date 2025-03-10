@@ -20,6 +20,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.SavedVariables;
 import org.firstinspires.ftc.teamcode.auto.AutoUtils;
+import org.firstinspires.ftc.teamcode.auto.ChamberOnly;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
 import org.firstinspires.ftc.teamcode.commands.IntakeCommands;
 import org.firstinspires.ftc.teamcode.commands.LimelightCommands;
@@ -127,9 +128,9 @@ public class Echo extends CommandOpMode {
             super.run();
         }
 //        limeLightSubsystem.startLimelight();
-//        schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));
+        schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));
         schedule(new DischargeCommands.MotorControl(dischargeSubsystem, systemGamepad::getRightY, true, telemetry));
-
+        mecanumDrive.setHeading(SavedVariables.angle);
 
         mecanumX = () -> driverGamepad.getLeftX();
         mecanumY = () -> driverGamepad.getLeftY();
@@ -144,7 +145,8 @@ public class Echo extends CommandOpMode {
 
     @Override
     public void run() {
-        AutoUtils.savePosition(mecanumDrive);
+
+//        AutoUtils.savePosition(mecanumDrive);
         if (controllersState != robotState) {
             CommandScheduler.getInstance().clearButtons();
 
@@ -177,13 +179,13 @@ public class Echo extends CommandOpMode {
                     chamberBindings();
                     break;
                 case AUTOINTAKE:
+                    AutoIntakeBindings();
 
             }
         }
         if (driverX.get() && driverStart.get()) {
             mecanumDrive.resetHeading();
         }
-        limeLightSubsystem.setPipeline(Pipelines.BLUE);//todo: remove later
 
         //if (systemA.get() && controllersState == RobotState.INTAKE)
         //    systemX.whenPressed(new SequentialCommandGroup(
@@ -233,10 +235,13 @@ public class Echo extends CommandOpMode {
 
         driverBack.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
         driverRightBumper.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setWentWentServo(0.5)), new InstantCommand(() -> mecanumDrive.setWentWentServo(1)));
+        driverLeftBumper.whenPressed(() -> mecanumDrive.resetPos(new Point(0.9, 1)));
 
     }
 
     public void basketBindings() {
+        driverA.whenPressed(new MecanumCommands.SetExtraRotationCmd(mecanumDrive, 225));
+
         driverDPadDown.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> -0.25, () -> 0.0,
                 () -> 1.0, true));
         driverDPadUp.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> 0.25, () -> 0.0,
@@ -279,6 +284,7 @@ public class Echo extends CommandOpMode {
         systemBack.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
 
         driverBack.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
+        driverLeftBumper.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
 
     }
 
@@ -376,6 +382,8 @@ public class Echo extends CommandOpMode {
 
         intakeSubsystem.setDefaultCommand(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem, systemGamepad::getLeftY));
 
+        driverLeftBumper.whenPressed(() -> mecanumDrive.resetPos(new Point(0.9, 1)));
+        //systemRightStick.whenPressed(ChamberOnly)
 
 //        driverA.whenPressed(AutoUtils.goToHPFromChamber(mecanumDrive, telemetry).beforeStarting(() -> {
 //            queueable = true;
@@ -409,14 +417,13 @@ public class Echo extends CommandOpMode {
 
 //                            new DischargeCommands.DischargeGotoCmd(dischargeSubsystem
 //                                    , dischargeSubsystem.highChamberHeight, multipleTelemetry))); //go to chamber
-
-//        systemY.whenPressed(
-//                new SequentialCommandGroup(
-//                        new IntakeCommands.WaitForTransferEnd(),
-//                        new SetStateCommands.BasketStateCmd(), //change to chamber state
-//                        //new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight),
-//                        new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highBasketHeight)));
-        systemY.whenPressed(new LimelightCommands.AlignXCmd(limeLightSubsystem, mecanumDrive));
+        systemY.whenPressed(
+                new SequentialCommandGroup(
+                        new IntakeCommands.WaitForTransferEnd(),
+                        new SetStateCommands.BasketStateCmd(), //change to chamber state
+                        //new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight),
+                        new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highBasketHeight)));
+//        systemY.whenPressed(new LimelightCommands.AlignXCmd(limeLightSubsystem, mecanumDrive));
 
         systemA.whenPressed(
                 new SequentialCommandGroup(
@@ -431,14 +438,14 @@ public class Echo extends CommandOpMode {
                 new SetStateCommands.IntakeStateCmd()
         ));
 //        systemX.whenPressed(new LimelightCommands.AlignXCmd(limeLightSubsystem,mecanumDrive));
-//        systemB.whenPressed(new IntakeCommands.SlideUntilCmd(intakeSubsystem, 1500, 0.8, true));
-        systemB.whenPressed(new SequentialCommandGroup(new SetStateCommands.IntakeStateCmd(),
+        systemB.whenPressed(new IntakeCommands.SlideUntilCmd(intakeSubsystem, 1500, 0.8, true));
+        systemB.whenReleased(new SequentialCommandGroup(new SetStateCommands.IntakeStateCmd(),
                 new IntakeCommands.StartIntakeCmd(intakeSubsystem))).and(new Trigger(() -> !systemStart.get()));
 
 //                    systemLeftStick.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
 //                    systemRightStick.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
 
-        systemDPadLeft.whenPressed(new DischargeCommands.HpDischarge(dischargeSubsystem));
+        systemDPadLeft.whenPressed(new SequentialCommandGroup(new IntakeCommands.WaitForTransferEnd(), new DischargeCommands.HpDischarge(dischargeSubsystem)));
 
         systemLeftBumper.whenPressed(new SequentialCommandGroup(
                 new SetStateCommands.NoneStateCmd(),
@@ -451,6 +458,13 @@ public class Echo extends CommandOpMode {
         systemBack.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
 
         driverBack.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
+        driverA.whenPressed(new MecanumCommands.SetExtraRotationCmd(mecanumDrive, 225));
+        systemStart.toggleWhenPressed(new InstantCommand(() -> limeLightSubsystem.setPipeline(Pipelines.YELLOW)), new InstantCommand(() -> limeLightSubsystem.setPipeline(Pipelines.BLUE)));
+    }
+
+    public void AutoIntakeBindings() {
+        systemB.whenPressed(new SequentialCommandGroup(new SetStateCommands.IntakeStateCmd(),
+                new IntakeCommands.StartIntakeCmd(intakeSubsystem))).and(new Trigger(() -> !systemStart.get()));
     }
 
     public void telemetries() {
@@ -495,6 +509,9 @@ public class Echo extends CommandOpMode {
         multipleTelemetry.addData("derivative", LimelightCommands.AlignXCmd.derivative);
 
 
+        //---mecanum---
+        multipleTelemetry.addData("pos", mecanumDrive.getPosition());
+        multipleTelemetry.addData("savedAngle", SavedVariables.angle);
 //        multipleTelemetry.addData("servo pos", intakeSubsystem.getZServoPosition());
 //        telemetry.addData("y saved",SavedVariables.y);
 //        telemetry.addData("robot x,y", mecanumDrive.getPosition());
@@ -536,5 +553,6 @@ public class Echo extends CommandOpMode {
         driverLeftStick = new GamepadButton(driverGamepad, GamepadKeys.Button.LEFT_STICK_BUTTON);
         driverRightStick = new GamepadButton(driverGamepad, GamepadKeys.Button.RIGHT_STICK_BUTTON);
         driverBack = new GamepadButton(driverGamepad, GamepadKeys.Button.BACK);
+
     }
 }

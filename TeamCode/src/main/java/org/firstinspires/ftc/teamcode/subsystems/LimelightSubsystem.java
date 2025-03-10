@@ -8,12 +8,13 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class LimelightSubsystem extends SubsystemBase {
     public final Limelight3A limelight;
     MultipleTelemetry telemetry;
-    int pipeline = 0;
+    int pipeline = Pipelines.BLUE.PIPELINE;
     LLResult result;
     final double limelightH = 41.5, sampleH = 3.8, limelightAngle = 27.6;
     int distance;
     public final double middleOfScreen = 300, tickPerCM = 19.34, distanceFromArmStart = 25;
     public double alignedY = 0;
+    public double limelightInCm;
 
     public LimelightSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
         this.telemetry = telemetry;
@@ -45,12 +46,9 @@ public class LimelightSubsystem extends SubsystemBase {
 
     public int getYDistance() {
         updateResults();
-        distance = Math.min(
-                (int) (((limelightH - sampleH) * Math.tan(Math.toRadians(-result.getPythonOutput()[1] / 240 * 42 + limelightAngle)) + distanceFromArmStart + 34.27) * tickPerCM)
-                , 2222);
-        if (distance > 1900) {
-            distance -= 100;
-        }
+        distance = (int) (((limelightH - sampleH) * Math.tan(Math.toRadians(-result.getPythonOutput()[1] / 240 * 42 + limelightAngle)) + distanceFromArmStart + 31.5) * tickPerCM);
+        limelightInCm = (distance - 580) / 48.2;
+        distance = (int) (limelightInCm * 31.85 + 861);
         alignedY = distance;
         return distance;
     }

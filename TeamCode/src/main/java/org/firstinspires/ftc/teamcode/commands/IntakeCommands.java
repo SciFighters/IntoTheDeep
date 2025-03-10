@@ -2,18 +2,16 @@ package org.firstinspires.ftc.teamcode.commands;
 
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandScheduler;
+import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
-import org.firstinspires.ftc.teamcode.subsystems.ArmsStages;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ClawStages;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands.DischargeGrabCmd;
-import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
 
 import java.util.function.Supplier;
 
@@ -549,10 +547,10 @@ public class IntakeCommands {
                     new ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
                     new WaitCommand(100),
                     new SetRotationCmd(intakeSubsystem, angle),
-                    new WaitCommand((long) angle * 325),
+                    new WaitCommand((long) angle * 500),
                     new OpenScrewCmd(intakeSubsystem, true),
-                    new ClawStageCmd(intakeSubsystem, ClawStages.ROTATE),
-                    new WaitCommand(500),
+                    new ClawStageCmd(intakeSubsystem, ClawStages.ROTATE_HEIGHT),
+                    //new WaitCommand(500),
                     new RotateBackCmd(intakeSubsystem),
                     new WaitCommand((long) Math.abs(angle - 0.5) * 500),
                     new ClawStageCmd(intakeSubsystem, ClawStages.INTAKE)
@@ -563,23 +561,24 @@ public class IntakeCommands {
         public SampleSubmIntakeCmd(IntakeSubsystem intakeSubsystem, Supplier<Double> angle) {
             double position = (angle.get() > 0) ? angle.get() : 180 + angle.get();
             double wanted = ((position / 180 - 0.5) * 2 / 3 + 0.5);
-            if (wanted > 0.75) {
+            if (wanted > 0.7) {
                 wanted = 0;
             }
             addCommands(
                     new ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
                     new WaitCommand(100),
                     new SetRotationCmd(intakeSubsystem, angle),
-                    new WaitCommand((long) wanted * 400),
+                    new WaitCommand((long) wanted * 750),
                     new OpenScrewCmd(intakeSubsystem, true),
-                    new ClawStageCmd(intakeSubsystem, ClawStages.ROTATE),
-                    new WaitCommand(500),
+                    new ClawStageCmd(intakeSubsystem, ClawStages.ROTATE_HEIGHT),
+                    //new WaitCommand(100),
                     new RotateBackCmd(intakeSubsystem),
                     new WaitCommand((long) Math.abs(wanted - 0.5) * 500),
                     new ClawStageCmd(intakeSubsystem, ClawStages.INTAKE)
             );
             addRequirements(intakeSubsystem);
         }
+
 
     }
 

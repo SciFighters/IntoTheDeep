@@ -358,7 +358,7 @@ public class DischargeCommands {
         public void execute() {
             MotorControl.setMode(MotorControl.Mode.OFF);
             double curPos = dischargeSubsystem.getPosition();
-            if (curPos < 60) {
+            if (curPos < 100) {
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slideHalfSpeed);
             } else if (curPos > 300)
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesSpeed);

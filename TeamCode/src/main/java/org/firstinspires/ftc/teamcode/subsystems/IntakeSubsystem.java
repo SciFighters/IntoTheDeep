@@ -36,7 +36,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public boolean end = false;
     TouchSensor leftTouch, rightTouch;
     ElapsedTime screwTimer = new ElapsedTime();
-    public final double openScrewTime = 0.275;
+    public final double openScrewTime = 0.35;
 
 
 

@@ -45,8 +45,8 @@ public class DischargeSubsystem extends SubsystemBase {
 
     public final int manualTicksPerSecond = 1200;
     public final double slidesSpeed = 1;
-    public final double slideHalfSpeed = 1;
-    public final double slidesLowSpeed = 1;//0.7
+    public final double slideHalfSpeed = 0.6;
+    public final double slidesLowSpeed = 0.7;//0.7
     PIDFCoefficients pidf = new PIDFCoefficients(15, 0.05, 0, 0);
 
 

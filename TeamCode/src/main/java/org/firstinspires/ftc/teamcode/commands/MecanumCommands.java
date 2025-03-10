@@ -373,7 +373,7 @@ public class MecanumCommands {
         final double speed;
 
         public ConstantVelocityGotoCmd(Telemetry telemetry, MecanumDrive mecanumDrive, double x, double y,
-                       double wantedAngle, double sensitivity, double wantedDistance, double speed) {
+                                       double wantedAngle, double sensitivity, double wantedDistance, double speed) {
             this.x = x;
             this.y = y;
             this.wantedAngle = wantedAngle;
@@ -387,7 +387,7 @@ public class MecanumCommands {
         }
 
         public ConstantVelocityGotoCmd(Telemetry telemetry, MecanumDrive mecanumDrive, double x, double y,
-                       double wantedAngle, double sensitivity, double speed) {
+                                       double wantedAngle, double sensitivity, double speed) {
             this.x = x;
             this.y = y;
             this.wantedAngle = wantedAngle;
@@ -401,7 +401,7 @@ public class MecanumCommands {
         }
 
         public ConstantVelocityGotoCmd(Telemetry telemetry, MecanumDrive mecanumDrive, double x, double y,
-                       double wantedAngle, double sensitivity, double speed, boolean noRotation) {
+                                       double wantedAngle, double sensitivity, double speed, boolean noRotation) {
             this.x = x;
             this.y = y;
             this.wantedAngle = wantedAngle;
@@ -682,6 +682,55 @@ public class MecanumCommands {
         public void end(boolean interrupted) {
             Integral = 0;
             derivative = 0;
+        }
+    }
+
+    public static class SetExtraRotationCmd extends CommandBase {
+        double wantedHeading;
+        double error = 0, lastError = 0, proportional, lastTime = 0, Integral, derivative;
+        public static double kp = 0.01, ki = 0.0005, kd = -0.006;//0.025
+        MecanumDrive mecanumDrive;
+        boolean end = false;
+
+        public SetExtraRotationCmd(MecanumDrive mecanumDrive, double wantedHeading) {
+            this.mecanumDrive = mecanumDrive;
+            this.wantedHeading = wantedHeading;
+//            addRequirements(mecanumDrive);
+        }
+
+
+        @Override
+        public void execute() {
+//            double currentTime = (double) System.currentTimeMillis() / 1000;
+//            double deltaTime = currentTime - lastTime;
+//            if (lastTime != 0) {
+//                error = Utils.calcDeltaAngle(wantedHeading + 180, mecanumDrive.getAdjustedHeading());
+//                proportional = Range.clip(error, -100, 100) * kp;
+//                Integral += Range.clip(error, -30, 30) * deltaTime;
+//                if (Math.signum(Integral) != Math.signum(error)) {
+//                    Integral = 0;
+//                }
+//                derivative = (lastError - error) / deltaTime;
+//                mecanumDrive.drive(0, 0,
+//                        (proportional + Integral * ki + derivative * kd +
+//                                Math.signum(proportional + Integral * ki + derivative * kd) * 0.04) / 2,
+//                        0.5);
+//            }
+//            lastError = error;
+//            lastTime = currentTime;
+            mecanumDrive.extraR = Utils.calcDeltaAngle(wantedHeading + 180, mecanumDrive.getAdjustedHeading()) * kp;
+        }
+
+        @Override
+        public boolean isFinished() {
+            return (Math.abs(wantedHeading + 180 - mecanumDrive.getAdjustedHeading()) < 10);
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            Integral = 0;
+            derivative = 0;
+            mecanumDrive.extraR = 0;
         }
     }
 

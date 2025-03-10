@@ -18,13 +18,15 @@ import org.firstinspires.ftc.teamcode.subsystems.LimelightSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Pipelines;
 
+import java.util.function.Supplier;
+
 public class LimelightCommands {
     @Config
     public static class AlignXCmd extends CommandBase {
         LimelightSubsystem limelight;
         MecanumDrive mecanumDrive;
         public static double kp = 0.0008;
-        public static double minPower = 0.09;
+        public static double minPower = 0.095;
         public static double ki = 0;
         public static double kd = -0.00005;
         double currentPipeline;
@@ -124,6 +126,9 @@ public class LimelightCommands {
         double wantedAngle;
         boolean outOfRange = false;
         double angle;
+        long waitTime = 0;
+        Supplier<Long> wait = () -> waitTime;
+
 
         public LimelightStartIntake(LimelightSubsystem limelightSubsystem, IntakeSubsystem intakeSubsystem, DischargeSubsystem dischargeSubsystem, MecanumDrive mecanumDrive) {
             this.intakeSubsystem = intakeSubsystem;
@@ -136,9 +141,16 @@ public class LimelightCommands {
 //                            addCommands(new InstantCommand(() -> mecanumDrive.drive(-0.3, 0, 0, 0.2)).withTimeout(300));
 //                        }
 //                    }),
+                    new InstantCommand(() -> {
+                        if (limelightSubsystem.getYDistance() < 1350) {
+                            mecanumDrive.setMoverServo(0.5);
+                            waitTime = 500;
+                        }
+                    }),
+                    new WaitCommand(wait.get()),
+                    new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)),
                     new AlignXCmd(limelightSubsystem, mecanumDrive)/*.withTimeout(1000)*/,
                     new AlignXCmd(limelightSubsystem, mecanumDrive).withTimeout(250),
-                    new WaitCommand(100),
                     new InstantCommand(() -> {
                         double position = (limelightSubsystem.getAngle() > 0) ? limelightSubsystem.getAngle() : 180 + limelightSubsystem.getAngle();
                         angle = ((position / 180 - 0.5) * 2 / 3 + 0.5);
@@ -147,7 +159,6 @@ public class LimelightCommands {
                         }
                     }),
                     new IntakeCommands.StartIntakeCmd(intakeSubsystem, limelightSubsystem::getYDistance, angle > 0.5),
-                    new WaitCommand(1000),
 //                    new IntakeCommands.SetRotationCmd(intakeSubsystem, limelightSubsystem::getAngle),
 //                    new WaitCommand(300),
 //                    new IntakeCommands.OpenScrewCmd(intakeSubsystem, true),

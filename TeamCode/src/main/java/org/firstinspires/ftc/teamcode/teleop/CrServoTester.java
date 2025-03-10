@@ -12,12 +12,12 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @TeleOp
 public class CrServoTester extends CommandOpMode {
 
-    CRServo servo;
+    CRServo rightServo, leftServo;
     ElapsedTime time = new ElapsedTime();
     GamepadEx systemGamepad;
     GamepadButton systemA;
     GamepadButton systemB;
-    GamepadButton systemY;
+    GamepadButton systemY, systemRightButton, systemLeftButton;
     double duration = 0;
 
     @Override
@@ -26,7 +26,11 @@ public class CrServoTester extends CommandOpMode {
         systemA = new GamepadButton(systemGamepad, GamepadKeys.Button.A);
         systemB = new GamepadButton(systemGamepad, GamepadKeys.Button.B);
         systemY = new GamepadButton(systemGamepad, GamepadKeys.Button.Y);
-        servo = hardwareMap.crservo.get("spinServo");
+        systemRightButton = new GamepadButton(systemGamepad, GamepadKeys.Button.RIGHT_BUMPER);
+        systemLeftButton = new GamepadButton(systemGamepad, Button.LEFT_BUMPER);
+        systemY = new GamepadButton(systemGamepad, GamepadKeys.Button.Y);
+        rightServo = hardwareMap.crservo.get("RightHangingServo");
+        leftServo = hardwareMap.crservo.get("LeftHangingServo");
     }
 
     @Override
@@ -36,20 +40,21 @@ public class CrServoTester extends CommandOpMode {
             @Override
             public void run() {
                 time.reset();
-                servo.setPower(1);
+                rightServo.setPower(1);
             }
         });
         systemY.whenPressed(new Runnable() {
             @Override
             public void run() {
                 time.reset();
-                servo.setPower(-1);
+                rightServo.setPower(-1);
             }
         });
         systemB.whenPressed(() -> {
             duration = time.seconds();
-            servo.setPower(0);
+            rightServo.setPower(0);
         });
+
         telemetry.addData("duration", duration);
         telemetry.addData("time", time.seconds());
         telemetry.update();
