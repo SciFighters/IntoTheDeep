@@ -525,6 +525,7 @@ public class Echo extends CommandOpMode {
                 new IntakeCommands.StartIntakeCmd(intakeSubsystem))).and(new Trigger(() -> !systemStart.get()));
     }
 
+
     public void telemetries() {
         //---states & commands---
         telemetry.addLine("---states & commands---");
@@ -573,6 +574,7 @@ public class Echo extends CommandOpMode {
 
 
         //---mecanum---
+        telemetry.addLine("---limelight---");
         multipleTelemetry.addData("pos", mecanumDrive.getPosition());
         multipleTelemetry.addData("savedAngle", SavedVariables.angle);
         multipleTelemetry.addData("bl", mecanumDrive.bl.getCurrentPosition());

@@ -61,7 +61,7 @@ public class BasketOnly extends CommandOpMode {
 //                                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.31, 0.43, 203, 0.03, 0.8),
                                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.26, 0.32, 203, 0.03, 0.8)//preload discharge
                         ),
-                        new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 2120)),
+                        new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 2100)),
                 new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
 
                 intakeAction(0.345, 0.55, 203),
@@ -71,7 +71,7 @@ public class BasketOnly extends CommandOpMode {
                                 new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
                                 new ParallelCommandGroup(
                                         new DischargeCommands.GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highBasketHeight),
-                                        new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 2120))
+                                        new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 2100))
 
                         ),
                         new DischargeCommands.SequentialRaceWrapper(
@@ -99,7 +99,7 @@ public class BasketOnly extends CommandOpMode {
                 ),
 
 
-                dischargeAction(0.27, 0.34, 197),
+                dischargeAction(0.31, 0.34, 197),
 
                 new ParallelCommandGroup(
                         new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)),
@@ -192,9 +192,10 @@ public class BasketOnly extends CommandOpMode {
     public void run() {
         AutoUtils.savePosition(mecanumDrive);
         super.run();
-        multipleTelemetry.addData("posm1", intakeSubsystem.getMotorPosition());
-        multipleTelemetry.addData("posm2", intakeSubsystem.getMotor2Position());
-        multipleTelemetry.addData("limelight x", limelightSubsystem.getXDistance());
+        multipleTelemetry.addData("x", mecanumDrive.getPosition().x);
+        multipleTelemetry.addData("y", mecanumDrive.getPosition().y);
+        multipleTelemetry.addData("angle", mecanumDrive.getHeading());
+        multipleTelemetry.addData("angle adjusted", mecanumDrive.getAdjustedHeading());
         // multipleTelemetry.addData("lx", limelightSubsystem.getXDistance());
         // multipleTelemetry.addData("yx", limelightSubsystem.getYDistance());
 

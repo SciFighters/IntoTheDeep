@@ -9,21 +9,26 @@ import com.arcrobotics.ftclib.kinematics.wpilibkinematics.ChassisSpeeds;
 import com.arcrobotics.ftclib.kinematics.wpilibkinematics.MecanumDriveKinematics;
 import com.arcrobotics.ftclib.kinematics.wpilibkinematics.MecanumDriveOdometry;
 import com.arcrobotics.ftclib.kinematics.wpilibkinematics.MecanumDriveWheelSpeeds;
+import com.qualcomm.hardware.bosch.BHI260IMU;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.IMU_Integrator;
 import org.opencv.core.Point;
 
@@ -34,9 +39,16 @@ public class MecanumDrive extends SubsystemBase {
     public Servo wentWentServo;
     DistanceSensor distanceSensor;
     MecanumDriveKinematics kinematics;
-    BNO055IMU imu;
+    BHI260IMU imu;
     MecanumDriveWheelSpeeds wheelSpeeds;
-    private final BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+    private final BHI260IMU.Parameters parameters = new IMU.Parameters(
+            new RevHubOrientationOnRobot(
+                    RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                    RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+            )
+    );
+    ;
+    IMU_Integrator imuIntegrator;
     //bl = intakeOdometer, br = nonParallel, fr = dischargeOdometer
     ElapsedTime time = new ElapsedTime();
     Pose2d pos;
@@ -51,6 +63,12 @@ public class MecanumDrive extends SubsystemBase {
     double startAngle = 0;
     public double extraX = 0, extraY = 0, extraR = 0;
     double correctionX = 0, correctionY = 0;
+
+    @Override
+    public void periodic() {
+        super.periodic();
+        imuIntegrator.update();
+    }
 
     public MecanumDrive(MultipleTelemetry telemetry, HardwareMap hm, LinearOpMode opMode) {
         this.telemetry = telemetry;
@@ -72,11 +90,10 @@ public class MecanumDrive extends SubsystemBase {
         bl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        distanceSensor = hm.get(DistanceSensor.class, "distanceSensor");
         this.opMode = opMode;
-        imu = hm.get(BNO055IMU.class, "imu");
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        imu = hm.get(BHI260IMU.class, "imu");
+
+
         startingPosition = new Point(0, 0);
-        parameters.accelerationIntegrationAlgorithm = new IMU_Integrator(imu, startingPosition, startAngle, telemetry, bl, fr, fl);
         imu.initialize(parameters);
 
         Translation2d flLocation = new Translation2d(100, 164);//164
@@ -93,7 +110,7 @@ public class MecanumDrive extends SubsystemBase {
 
 //        odometry = new MecanumDriveOdometry(odometryKinematics, Rotation2d.fromDegrees(getHeading()), new Pose2d(startingPosition.x,startingPosition.y,Rotation2d.fromDegrees(0)));
         time.reset();
-        imu.startAccelerationIntegration(new Position(DistanceUnit.METER, this.startingPosition.x, this.startingPosition.y, 0, 0), new Velocity(), 2);
+
 
     }
 
@@ -131,7 +148,7 @@ public class MecanumDrive extends SubsystemBase {
         kinematics = new MecanumDriveKinematics(flLocation, frLocation, blLocation, brLocation);
 
 
-        imu = hm.get(BNO055IMU.class, "imu");
+        imu = hm.get(BHI260IMU.class, "imu");
         initIMU(imu, opMode);
 
 
@@ -141,13 +158,10 @@ public class MecanumDrive extends SubsystemBase {
     }
 
 
-    private void initIMU(BNO055IMU imu, LinearOpMode robot) {
+    private void initIMU(BHI260IMU imu, LinearOpMode robot) {
         this.imu = imu;
 
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        RobotLog.d("imu params init start");
-        parameters.accelerationIntegrationAlgorithm = new IMU_Integrator(imu, startingPosition, startAngle, telemetry, bl, fr, fl);
+        imuIntegrator = new IMU_Integrator(imu, startingPosition, startAngle, telemetry, bl, fr, fl);
         RobotLog.d("imu init");
         imu.initialize(parameters);
         RobotLog.d("imu init finished");
@@ -155,26 +169,32 @@ public class MecanumDrive extends SubsystemBase {
 
         ElapsedTime timer = new ElapsedTime();
         timer.reset();
-        while (!imu.isGyroCalibrated() && !robot.isStopRequested() && timer.seconds() < 5) {
-            robot.sleep(50);
-        }
-        if (imu.isGyroCalibrated()) {
-            robot.telemetry.addData("Gyro", "Done Calibrating");
-            RobotLog.d("Gyro done init");
+        robot.sleep(200);
+        imuIntegrator.initialize(parameters, new Position(DistanceUnit.METER, this.startingPosition.x, this.startingPosition.y, 0, 0), new Velocity());
+//        while (!imu.isGyroCalibrated() && !robot.isStopRequested() && timer.seconds() < 5) {
+//            robot.sleep(50);
+//        }
+//        if (imu.isGyroCalibrated()) {
+//            robot.telemetry.addData("Gyro", "Done Calibrating");
+//            RobotLog.d("Gyro done init");
+//
+//        } else {
+//            robot.telemetry.addData("Gyro", "Gyro/IMU Calibration Failed");
+//            RobotLog.d("Gyro failed init" + " " + imu.isGyroCalibrated() + " " + imu.isAccelerometerCalibrated() + " " + imu.isMagnetometerCalibrated());
+//        }
 
-        } else {
-            robot.telemetry.addData("Gyro", "Gyro/IMU Calibration Failed");
-            RobotLog.d("Gyro failed init" + " " + imu.isGyroCalibrated() + " " + imu.isAccelerometerCalibrated() + " " + imu.isMagnetometerCalibrated());
-        }
 
-        imu.startAccelerationIntegration(new Position(DistanceUnit.METER, this.startingPosition.x, this.startingPosition.y, 0, 0), new Velocity(), 2);
-
-        RobotLog.d("IMU status: %s", imu.getSystemStatus().toShortString());
-        RobotLog.d("IMU calibration status: %s", imu.getCalibrationStatus().toString());
+//        imu.startAccelerationIntegration(new Position(DistanceUnit.METER, this.startingPosition.x, this.startingPosition.y, 0, 0), new Velocity(), 2);
+//        BNO055IMU imu1;
+//        imu1.startAccelerationIntegration();
+//        RobotLog.d("IMU status: %s", imu.getSystemStatus().toShortString());
+//        RobotLog.d("IMU calibration status: %s", imu.getCalibrationStatus().toString());
     }
 
 
     public void drive(double x, double y, double rotation, double boost) {
+
+
         x += extraX;
         y += extraY;
         rotation += extraR;
@@ -223,8 +243,8 @@ public class MecanumDrive extends SubsystemBase {
     }
 
     public double getHeading() {
-        Orientation orientation = imu.getAngularOrientation();
-        return (-orientation.firstAngle) % 360 + 180;
+        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+        return (-orientation.getYaw(AngleUnit.DEGREES)) % 360 + 180;
     }
 
     public void resetHeading() {
@@ -240,7 +260,7 @@ public class MecanumDrive extends SubsystemBase {
     }
 
     public Point getPosition() {
-        return new Point(imu.getPosition().x + correctionX, imu.getPosition().y + correctionY);
+        return new Point(imuIntegrator.getPosition().x + correctionX, imuIntegrator.getPosition().y + correctionY);
     }
 
     public void setFieldOriented(boolean fieldOriented) {
@@ -270,9 +290,11 @@ public class MecanumDrive extends SubsystemBase {
     }
 
     public void resetPos(Point pos) {
-        correctionX = pos.x - imu.getPosition().x;
-        correctionY = pos.y - imu.getPosition().y;
+        correctionX = pos.x - imuIntegrator.getPosition().x;
+        correctionY = pos.y - imuIntegrator.getPosition().y;
     }
+
+
 
 
 }

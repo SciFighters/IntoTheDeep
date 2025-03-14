@@ -4,27 +4,30 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.qualcomm.hardware.bosch.BHI260IMU;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.opencv.core.Point;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
+public class IMU_Integrator {
     final double tile = 0.6;
     final double meters_to_inches = 39.37008;
     private final int ticksPerMeter = 13362;//todo: change later to real number
     private final double ticksPerDegree = 41.028;//todo: change later to real number
     MultipleTelemetry telemetry;
     boolean mecanum = true;
-    BNO055IMU.Parameters parameters = null;
+    BHI260IMU.Parameters parameters = null;
     Position position = new Position();
     Velocity velocity = new Velocity();
     Acceleration acceleration = null;
@@ -52,10 +55,10 @@ public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
     private Point origin; // origin point of action
     private Point direction; // x,y direction for dashboard
     private double angularOffset = 0;
-    private BNO055IMU imu = null;
+    private BHI260IMU imu = null;
 
 
-    public IMU_Integrator(BNO055IMU imu, Point origin, double angularOffset, MultipleTelemetry telemetry,
+    public IMU_Integrator(BHI260IMU imu, Point origin, double angularOffset, MultipleTelemetry telemetry,
                           DcMotorEx vl, DcMotorEx vr, DcMotorEx b) {
         this.vl = vl;
         this.vr = vr;
@@ -147,7 +150,11 @@ public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
         position.y = 0;
     }
 
-    public void initialize(BNO055IMU.Parameters parameters, Position initialPosition, Velocity initialVelocity) {
+    public void initialize(BHI260IMU.Parameters parameters, Position initialPosition, Velocity initialVelocity) {
+        imu.resetYaw();
+        vl_startPos = vl.getCurrentPosition();
+        vr_startPos = vr.getCurrentPosition();
+        b_startPos = b.getCurrentPosition();
         this.parameters = parameters;
         this.position = initialPosition != null ? initialPosition : this.position;
 
@@ -170,12 +177,12 @@ public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
     }
 
     public double getHeading() {
-        Orientation orientation = imu.getAngularOrientation();
-        return -orientation.firstAngle + angularOffset;
+        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+        return -orientation.getYaw(AngleUnit.DEGREES) + angularOffset;
     }
 
-    @Override
-    public void update(Acceleration linearAcceleration) {
+
+    public void update() {
 
 //        if (this.useDashBoard && FtcDashboard.getInstance() != null && pathx.size() > 2) {
 //            Telemetry t = FtcDashboard.getInstance().getTelemetry();
@@ -188,6 +195,7 @@ public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
 
         this.position.x -= delta.f * Math.cos(a) - delta.s * Math.sin(a);
         this.position.y -= delta.s * Math.cos(a) + delta.f * Math.sin(a);
+
         // 100000000000 ps = 100 ms = 0.1 s
 //        if (this.useDashBoard && linearAcceleration.acquisitionTime - this.lastTimestamp >= 5000000L) {
 //            Point p = transformDashboard(this.position); // transform
