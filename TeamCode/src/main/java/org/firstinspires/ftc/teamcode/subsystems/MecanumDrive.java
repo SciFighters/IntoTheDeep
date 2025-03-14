@@ -39,7 +39,7 @@ public class MecanumDrive extends SubsystemBase {
     public Servo wentWentServo;
     DistanceSensor distanceSensor;
     MecanumDriveKinematics kinematics;
-    BHI260IMU imu;
+    IMU imu;
     MecanumDriveWheelSpeeds wheelSpeeds;
     private final BHI260IMU.Parameters parameters = new IMU.Parameters(
             new RevHubOrientationOnRobot(
@@ -158,7 +158,7 @@ public class MecanumDrive extends SubsystemBase {
     }
 
 
-    private void initIMU(BHI260IMU imu, LinearOpMode robot) {
+    private void initIMU(IMU imu, LinearOpMode robot) {
         this.imu = imu;
 
         imuIntegrator = new IMU_Integrator(imu, startingPosition, startAngle, telemetry, bl, fr, fl);
@@ -235,8 +235,8 @@ public class MecanumDrive extends SubsystemBase {
     }
 
     public ChassisSpeeds calcDriveSpeeds(double x, double y) {
-        if (isFieldOriented) {
-            return ChassisSpeeds.fromFieldRelativeSpeeds(-x, y, 0, Rotation2d.fromDegrees(getAdjustedHeading()));
+        if (isFieldOriented) {//not field now
+            return ChassisSpeeds.fromFieldRelativeSpeeds(-x, y, 0, Rotation2d.fromDegrees(getAdjustedHeading())  );
         } else {
             return new ChassisSpeeds(-x, y, 0);
         }
@@ -293,7 +293,10 @@ public class MecanumDrive extends SubsystemBase {
         correctionX = pos.x - imuIntegrator.getPosition().x;
         correctionY = pos.y - imuIntegrator.getPosition().y;
     }
+    public void resetYaw(){
+        imu.resetYaw();
 
+    }
 
 
 

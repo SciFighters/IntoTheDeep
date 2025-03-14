@@ -548,7 +548,7 @@ public class IntakeCommands {
         public SampleSubmIntakeCmd(IntakeSubsystem intakeSubsystem, double angle) {
             addCommands(
                     new ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
-                    new WaitCommand(100),
+                    new WaitCommand(200),
                     new SetRotationCmd(intakeSubsystem, angle),
                     new WaitCommand((long) angle * 500),
                     new OpenScrewCmd(intakeSubsystem, true),

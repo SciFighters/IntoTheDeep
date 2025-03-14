@@ -205,6 +205,7 @@ public class Echo extends CommandOpMode {
             DischargeCommands.MotorControl.setMode(DischargeCommands.MotorControl.Mode.DO_NOTHING);
 
 
+
         //if (systemA.get() && controllersState == RobotState.INTAKE)
         //    systemX.whenPressed(new SequentialCommandGroup(
         //            new SetStateCommands.NoneStateCmd(),
@@ -377,6 +378,7 @@ public class Echo extends CommandOpMode {
     }
 
     public void noneBindings() {
+        driverB.whenPressed(() -> mecanumDrive.resetYaw());
         driverRightBumper.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setWentWentServo(0.5)), new InstantCommand(() -> mecanumDrive.setWentWentServo(1)));
 
         driverLeftStick.whenPressed(() -> limeLightSubsystem.limelight.captureSnapshot("la shot"));

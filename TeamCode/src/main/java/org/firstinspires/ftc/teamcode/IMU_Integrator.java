@@ -7,6 +7,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BHI260IMU;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
@@ -55,10 +56,10 @@ public class IMU_Integrator {
     private Point origin; // origin point of action
     private Point direction; // x,y direction for dashboard
     private double angularOffset = 0;
-    private BHI260IMU imu = null;
+    private IMU imu = null;
 
 
-    public IMU_Integrator(BHI260IMU imu, Point origin, double angularOffset, MultipleTelemetry telemetry,
+    public IMU_Integrator(IMU imu, Point origin, double angularOffset, MultipleTelemetry telemetry,
                           DcMotorEx vl, DcMotorEx vr, DcMotorEx b) {
         this.vl = vl;
         this.vr = vr;
