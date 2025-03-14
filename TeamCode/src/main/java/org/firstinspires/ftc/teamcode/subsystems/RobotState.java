@@ -7,5 +7,6 @@ public enum RobotState {
     BASKET(),
     HPINTAKE(),
     AUTOCHAMBER(),
-    AUTOINTAKE()
+    AUTOINTAKE(),
+    CLIMB()
 }

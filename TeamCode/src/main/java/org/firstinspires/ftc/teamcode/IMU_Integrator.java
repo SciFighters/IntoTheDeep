@@ -177,11 +177,11 @@ public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
     @Override
     public void update(Acceleration linearAcceleration) {
 
-        if (this.useDashBoard && FtcDashboard.getInstance() != null && pathx.size() > 2) {
-            Telemetry t = FtcDashboard.getInstance().getTelemetry();
-            t.addData("[-2]", Arrays.toString(new double[]{pathx.get(pathx.size() - 2), pathy.get(pathy.size() - 2)}));
-            t.addData("[-1]", Arrays.toString(new double[]{pathx.get(pathx.size() - 1), pathy.get(pathy.size() - 1)}));
-        }
+//        if (this.useDashBoard && FtcDashboard.getInstance() != null && pathx.size() > 2) {
+//            Telemetry t = FtcDashboard.getInstance().getTelemetry();
+//            t.addData("[-2]", Arrays.toString(new double[]{pathx.get(pathx.size() - 2), pathy.get(pathy.size() - 2)}));
+//            t.addData("[-1]", Arrays.toString(new double[]{pathx.get(pathx.size() - 1), pathy.get(pathy.size() - 1)}));
+//        }
         FS delta = getDeltaOdometerDistance();
 
         double a = -getHeading() / 180.0 * Math.PI;
@@ -189,27 +189,27 @@ public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
         this.position.x -= delta.f * Math.cos(a) - delta.s * Math.sin(a);
         this.position.y -= delta.s * Math.cos(a) + delta.f * Math.sin(a);
         // 100000000000 ps = 100 ms = 0.1 s
-        if (this.useDashBoard && linearAcceleration.acquisitionTime - this.lastTimestamp >= 5000000L) {
-            Point p = transformDashboard(this.position); // transform
-            double lastx = pathx.get(pathx.size() - 1); // last path x
-            double lasty = pathy.get(pathy.size() - 1); // last path y
-            if (Math.abs(lastx - p.x) > 1 || Math.abs(lasty - p.y) > 1) {
-                pathx.add(p.x);
-                pathy.add(p.y);
-
-                TelemetryPacket packet = new TelemetryPacket();
-                Canvas canvas = packet.fieldOverlay();
-
-                canvas.setStroke("tomato");
-                canvas.strokePolyline(to_d_katan(pathx), to_d_katan(pathy));
-                Point o = transformDashboard(new Position()); // transform 0,0
-                canvas.fillCircle(o.x, o.y, 3);
-
-                FtcDashboard.getInstance().sendTelemetryPacket(packet);
-            }
-
-            this.lastTimestamp = linearAcceleration.acquisitionTime;
-        }
+//        if (this.useDashBoard && linearAcceleration.acquisitionTime - this.lastTimestamp >= 5000000L) {
+//            Point p = transformDashboard(this.position); // transform
+//            double lastx = pathx.get(pathx.size() - 1); // last path x
+//            double lasty = pathy.get(pathy.size() - 1); // last path y
+//            if (Math.abs(lastx - p.x) > 1 || Math.abs(lasty - p.y) > 1) {
+//                pathx.add(p.x);
+//                pathy.add(p.y);
+//
+//                TelemetryPacket packet = new TelemetryPacket();
+//                Canvas canvas = packet.fieldOverlay();
+//
+//                canvas.setStroke("tomato");
+//                canvas.strokePolyline(to_d_katan(pathx), to_d_katan(pathy));
+//                Point o = transformDashboard(new Position()); // transform 0,0
+//                canvas.fillCircle(o.x, o.y, 3);
+//
+//                FtcDashboard.getInstance().sendTelemetryPacket(packet);
+//            }
+//
+//            this.lastTimestamp = linearAcceleration.acquisitionTime;
+//        }
 
 //		FtcDashboard.getInstance().getTelemetry().addData("pox", this.position.x);
 //		FtcDashboard.getInstance().getTelemetry().addData("poy", this.position.y);

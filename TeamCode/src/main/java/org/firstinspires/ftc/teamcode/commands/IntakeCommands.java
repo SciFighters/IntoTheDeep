@@ -153,10 +153,13 @@ public class IntakeCommands {
 
         @Override
         public void execute() {
+            int pos = intakeSubsystem.getMotorPosition();
             if (initTime) {
                 intakeSubsystem.setRawPower(-0.4);
-            } else if (intakeSubsystem.getMotorPosition() > 60) {
+            } else if (pos > 450.0) {
                 intakeSubsystem.setRawPower(-intakeSubsystem.slidesSpeed);
+            } else if (pos > 200) {
+                intakeSubsystem.setRawPower(-intakeSubsystem.slidesHalfSpeed);
             } else {
                 intakeSubsystem.setRawPower(-intakeSubsystem.slidesLowSpeed);
             }
@@ -208,7 +211,7 @@ public class IntakeCommands {
 
         @Override
         public boolean isFinished() {
-            return elapsedTime.seconds() > 0.0;
+            return true;
         }
     }
 
@@ -607,10 +610,8 @@ public class IntakeCommands {
         public ReturnArmForTransferCmd(IntakeSubsystem intakeSubsystem, boolean initTime) {
 
             addCommands(
-                    new RotateBackCmd(intakeSubsystem),
-                    new Wait(intakeSubsystem, 0.25),
                     new ClawStageCmd(intakeSubsystem, ClawStages.UPPER),
-                    new Wait(intakeSubsystem, 0.2),
+//                    new Wait(intakeSubsystem, 0.2),
                     new ParallelCommandGroup(
                             new SlideHomeCmd(intakeSubsystem, initTime),
                             new SetRotationCmd(intakeSubsystem, 0)

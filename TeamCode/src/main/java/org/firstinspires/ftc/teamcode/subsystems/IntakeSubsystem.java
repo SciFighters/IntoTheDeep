@@ -32,12 +32,12 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public final int manualTicksPerSecond = 785;
     public final double slidesSpeed = 1;
-    public final double slidesLowSpeed = 0.6;
+    public final double slidesLowSpeed = 0.4;
+    public final double slidesHalfSpeed = 0.55;
     public boolean end = false;
     TouchSensor leftTouch, rightTouch;
     ElapsedTime screwTimer = new ElapsedTime();
     public final double openScrewTime = 0.35;
-
 
 
     public void openScrew() {

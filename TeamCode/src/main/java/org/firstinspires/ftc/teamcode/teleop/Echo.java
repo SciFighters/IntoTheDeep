@@ -5,9 +5,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.CommandScheduler;
-import com.arcrobotics.ftclib.command.ConditionalCommand;
 import com.arcrobotics.ftclib.command.InstantCommand;
-import com.arcrobotics.ftclib.command.ScheduleCommand;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.button.Button;
@@ -16,16 +14,17 @@ import com.arcrobotics.ftclib.command.button.Trigger;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.SavedVariables;
-import org.firstinspires.ftc.teamcode.auto.AutoUtils;
-import org.firstinspires.ftc.teamcode.auto.ChamberOnly;
+import org.firstinspires.ftc.teamcode.commands.ClimbCommands;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
 import org.firstinspires.ftc.teamcode.commands.IntakeCommands;
 import org.firstinspires.ftc.teamcode.commands.LimelightCommands;
 import org.firstinspires.ftc.teamcode.commands.MecanumCommands;
 import org.firstinspires.ftc.teamcode.commands.SetStateCommands;
+import org.firstinspires.ftc.teamcode.subsystems.ClimbSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.LimelightSubsystem;
@@ -47,6 +46,7 @@ public class Echo extends CommandOpMode {
     DischargeSubsystem dischargeSubsystem;
     IntakeSubsystem intakeSubsystem;
     LimelightSubsystem limeLightSubsystem;
+    ClimbSubsystem climbSubsystem;
 
     Supplier<Double> mecanumX, mecanumY, mecanumR;
 
@@ -56,6 +56,7 @@ public class Echo extends CommandOpMode {
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
     MultipleTelemetry multipleTelemetry = new MultipleTelemetry(telemetry, dashboardTelemetry);
+
 
     GamepadEx driverGamepad;
     GamepadEx systemGamepad;
@@ -71,6 +72,7 @@ public class Echo extends CommandOpMode {
     Button systemLeftBumper, driverLeftBumper;
     Button driverStart;
     Button systemBack, driverBack;
+    Button systemPs;
     Button systemStart;
     Button systemLeftStick, systemRightStick;
     Button driverLeftStick, driverRightStick;
@@ -78,6 +80,7 @@ public class Echo extends CommandOpMode {
     Runnable pullQueue;
     boolean queueable = false;
     BooleanSupplier queueableSup = () -> !queueable;
+    long swapTime = 0;
 
     public CommandBase pullQueue() {
         if (queue.size() > 0) {
@@ -89,6 +92,7 @@ public class Echo extends CommandOpMode {
 
     @Override
     public void initialize() {
+
 //        pullQueue = new Runnable() {
 //            @Override
 //            public void run() {
@@ -106,7 +110,8 @@ public class Echo extends CommandOpMode {
         dischargeSubsystem = new DischargeSubsystem(hardwareMap, multipleTelemetry);
         intakeSubsystem = new IntakeSubsystem(hardwareMap, multipleTelemetry);
         limeLightSubsystem = new LimelightSubsystem(hardwareMap, multipleTelemetry);
-        register(mecanumDrive, dischargeSubsystem, intakeSubsystem, limeLightSubsystem);
+        climbSubsystem = new ClimbSubsystem(hardwareMap);
+        register(mecanumDrive, dischargeSubsystem, intakeSubsystem, limeLightSubsystem, climbSubsystem);
         initButtons();
         robotState = RobotState.NONE;
         controllersState = null;
@@ -178,14 +183,27 @@ public class Echo extends CommandOpMode {
                 case CHAMBER:
                     chamberBindings();
                     break;
+                case CLIMB:
+                    climbBindings();
                 case AUTOINTAKE:
-                    AutoIntakeBindings();
+                    autoIntakeBindings();
+
 
             }
         }
         if (driverX.get() && driverStart.get()) {
             mecanumDrive.resetHeading();
         }
+        if (robotState == RobotState.CLIMB && System.currentTimeMillis() > swapTime + 500 && gamepad2.ps) {
+            robotState = RobotState.NONE;
+            swapTime = System.currentTimeMillis();
+        } else if (robotState == RobotState.NONE && System.currentTimeMillis() > swapTime + 500 && gamepad2.ps) {
+            robotState = RobotState.CLIMB;
+            swapTime = System.currentTimeMillis();
+        }
+        if (robotState == RobotState.CLIMB)
+            DischargeCommands.MotorControl.setMode(DischargeCommands.MotorControl.Mode.DO_NOTHING);
+
 
         //if (systemA.get() && controllersState == RobotState.INTAKE)
         //    systemX.whenPressed(new SequentialCommandGroup(
@@ -383,6 +401,8 @@ public class Echo extends CommandOpMode {
         intakeSubsystem.setDefaultCommand(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem, systemGamepad::getLeftY));
 
         driverLeftBumper.whenPressed(() -> mecanumDrive.resetPos(new Point(0.9, 1)));
+
+//        systemPs.whenPressed(new SetStateCommands.ClimbStateCmd());
         //systemRightStick.whenPressed(ChamberOnly)
 
 //        driverA.whenPressed(AutoUtils.goToHPFromChamber(mecanumDrive, telemetry).beforeStarting(() -> {
@@ -462,7 +482,45 @@ public class Echo extends CommandOpMode {
         systemStart.toggleWhenPressed(new InstantCommand(() -> limeLightSubsystem.setPipeline(Pipelines.YELLOW)), new InstantCommand(() -> limeLightSubsystem.setPipeline(Pipelines.BLUE)));
     }
 
-    public void AutoIntakeBindings() {
+    public void climbBindings() {
+        driverRightBumper.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setWentWentServo(0.5)), new InstantCommand(() -> mecanumDrive.setWentWentServo(1)));
+        DischargeCommands.MotorControl.setMode(DischargeCommands.MotorControl.Mode.DO_NOTHING);
+        intakeSubsystem.setDefaultCommand(new IntakeCommands.NoOpCommand(intakeSubsystem));
+
+        systemLeftStick.whenPressed(new DischargeCommands.ResetDischarge(dischargeSubsystem));
+        systemRightBumper.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
+
+        driverDPadDown.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> -0.25, () -> 0.0,
+                () -> 1.0, true));
+        driverDPadUp.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> 0.25, () -> 0.0,
+                () -> 1.0, true));
+        driverDPadLeft.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> -0.25, () -> 0.0, () -> 0.0,
+                () -> 1.0, true));
+        driverDPadRight.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.25, () -> 0.0, () -> 0.0,
+                () -> 1.0, true));
+
+        mecanumDrive.setDefaultCommand(new MecanumCommands.PowerCmd(telemetry, mecanumDrive,
+                mecanumX, mecanumY, mecanumR, ()
+                -> Math.max(driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), driverGamepad.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER)) * 0.5 + 0.5, true));
+
+
+        systemLeftBumper.whenPressed(new SequentialCommandGroup(
+                new SetStateCommands.NoneStateCmd(),
+                new DischargeCommands.GoHomeCmd(dischargeSubsystem)));
+
+        systemBack.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
+
+        driverBack.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
+        driverA.whenPressed(new MecanumCommands.SetExtraRotationCmd(mecanumDrive, 225));
+        systemStart.toggleWhenPressed(new InstantCommand(() -> limeLightSubsystem.setPipeline(Pipelines.YELLOW)), new InstantCommand(() -> limeLightSubsystem.setPipeline(Pipelines.BLUE)));
+
+        //---climb---
+
+        climbSubsystem.setDefaultCommand(new ClimbCommands.SetWinchPower(climbSubsystem, () -> -systemGamepad.getRightY(), () -> -systemGamepad.getLeftY()));
+
+    }
+
+    public void autoIntakeBindings() {
         systemB.whenPressed(new SequentialCommandGroup(new SetStateCommands.IntakeStateCmd(),
                 new IntakeCommands.StartIntakeCmd(intakeSubsystem))).and(new Trigger(() -> !systemStart.get()));
     }
@@ -502,16 +560,26 @@ public class Echo extends CommandOpMode {
         multipleTelemetry.addData("y limelight", limeLightSubsystem.getYDistance());
         multipleTelemetry.addData("angle limelight", limeLightSubsystem.getAngle());
         multipleTelemetry.addData("pipeline", limeLightSubsystem.getCurrentPipeline());
-        telemetry.addData("y", limeLightSubsystem.getRawY());
+        multipleTelemetry.addData("rawY", limeLightSubsystem.getRawY());
         multipleTelemetry.addData("cm", limeLightSubsystem.getYDistance() / limeLightSubsystem.tickPerCM);
+        multipleTelemetry.addData("x odometer limelight", limeLightSubsystem.getXDistanceOdometer());
         multipleTelemetry.addData("fhd", limeLightSubsystem.alignedY);
         telemetry.addData("servo angle", 1 - (limeLightSubsystem.getAngle() + 90) / 180);
         multipleTelemetry.addData("derivative", LimelightCommands.AlignXCmd.derivative);
+
+        //----climb---
+        telemetry.addData("right servo power", climbSubsystem.getrLastPower());
+        telemetry.addData("left servo power", climbSubsystem.getlLastPower());
 
 
         //---mecanum---
         multipleTelemetry.addData("pos", mecanumDrive.getPosition());
         multipleTelemetry.addData("savedAngle", SavedVariables.angle);
+        multipleTelemetry.addData("bl", mecanumDrive.bl.getCurrentPosition());
+        multipleTelemetry.addData("br", mecanumDrive.br.getCurrentPosition());
+        multipleTelemetry.addData("fl", mecanumDrive.fl.getCurrentPosition());
+        multipleTelemetry.addData("fr", mecanumDrive.fr.getCurrentPosition());
+        multipleTelemetry.addData("heading", mecanumDrive.getHeading());
 //        multipleTelemetry.addData("servo pos", intakeSubsystem.getZServoPosition());
 //        telemetry.addData("y saved",SavedVariables.y);
 //        telemetry.addData("robot x,y", mecanumDrive.getPosition());
@@ -553,6 +621,8 @@ public class Echo extends CommandOpMode {
         driverLeftStick = new GamepadButton(driverGamepad, GamepadKeys.Button.LEFT_STICK_BUTTON);
         driverRightStick = new GamepadButton(driverGamepad, GamepadKeys.Button.RIGHT_STICK_BUTTON);
         driverBack = new GamepadButton(driverGamepad, GamepadKeys.Button.BACK);
+//        systemPs = new GamepadButton(systemGamepad, () -> driverGamepad.gamepad.ps);
+
 
     }
 }

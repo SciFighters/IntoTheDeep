@@ -18,7 +18,7 @@ public class DischargeSubsystem extends SubsystemBase {
     private final DcMotorEx lowerMotor, upperMotor;
     private Servo gearBoxServo, clawServo;
     double servoDischargePos = 0, servoClimbPos = 1;
-    final double clawServoHoldPos = 0.38, clawServoReleasePos = 0.58;
+    final double clawServoHoldPos = 0.38, clawServoReleasePos = 0.58, clawServoHalfReleasePos = 0.45;
     private final TouchSensor touchSensor;
     MultipleTelemetry telemetry;
     public double timeUp = 0;
@@ -45,19 +45,19 @@ public class DischargeSubsystem extends SubsystemBase {
 
     public final int manualTicksPerSecond = 1200;
     public final double slidesSpeed = 1;
-    public final double slideHalfSpeed = 0.6;
-    public final double slidesLowSpeed = 0.7;//0.7
+    public final double slidesHalfSpeed = 0.55;
+    public final double slidesLowSpeed = 0.4;//0.7
     PIDFCoefficients pidf = new PIDFCoefficients(15, 0.05, 0, 0);
 
 
     public DischargeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
         lowerMotor = hardwareMap.get(DcMotorEx.class, "lower");
         upperMotor = hardwareMap.get(DcMotorEx.class, "upper");
-        gearBoxServo = hardwareMap.servo.get("gearBoxServo");
+//        gearBoxServo = hardwareMap.servo.get("gearBoxServo");
         clawServo = hardwareMap.servo.get("clawServo");
         touchSensor = hardwareMap.get(TouchSensor.class, "dischargeTs");
         lowerMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        gearBoxServo.setPosition(servoDischargePos);
+//        gearBoxServo.setPosition(servoDischargePos);
         resetEncoders();
         lowerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         upperMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -129,6 +129,10 @@ public class DischargeSubsystem extends SubsystemBase {
 
     public void releaseSample() {
         clawServo.setPosition(clawServoReleasePos);
+    }
+
+    public void halfReleaseSample() {
+        clawServo.setPosition(clawServoHalfReleasePos);
     }
 
     public void testClaw(double clawPos) {

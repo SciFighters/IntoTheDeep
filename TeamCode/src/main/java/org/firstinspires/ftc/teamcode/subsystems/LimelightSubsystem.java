@@ -5,6 +5,8 @@ import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.qualcomm.hardware.limelightvision.*;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.opencv.core.Mat;
+
 public class LimelightSubsystem extends SubsystemBase {
     public final Limelight3A limelight;
     MultipleTelemetry telemetry;
@@ -15,6 +17,7 @@ public class LimelightSubsystem extends SubsystemBase {
     public final double middleOfScreen = 300, tickPerCM = 19.34, distanceFromArmStart = 25;
     public double alignedY = 0;
     public double limelightInCm;
+    public double xToOdometer = 8.76;
 
     public LimelightSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
         this.telemetry = telemetry;
@@ -28,6 +31,20 @@ public class LimelightSubsystem extends SubsystemBase {
         updateResults();
         result = limelight.getLatestResult();
         return result.getPythonOutput()[0];
+    }
+
+    public double getXDistanceOdometer() {
+//        double alpha = getXDistance() / 320 * 54.5;
+//        return  Math.tan(Math.toRadians(alpha)) * getYDistance();
+        double rawY = getRawY() + 240;
+        double y = getYDistance();
+        if (rawY == 0) {
+            rawY = 1;
+        }
+        double x = getXDistance();
+
+        return x / rawY * y;
+
     }
 
     public double getAngle() {

@@ -20,6 +20,18 @@ public class SetStateCommands {
         }
     }
 
+    public static class ClimbStateCmd extends CommandBase {
+        @Override
+        public void initialize() {
+            Echo.setRobotState(RobotState.CLIMB);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
+
 
     public static class BasketStateCmd extends CommandBase {
         @Override

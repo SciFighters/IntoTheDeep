@@ -300,11 +300,21 @@ public class DischargeCommands {
         Supplier<Integer> targetSupplier;
         final boolean supplier;
         boolean chamber = false;
+        int waitDistance;
 
         public GoToTargetWait(DischargeSubsystem dischargeSubsystem, int target) {
             this.dischargeSubsystem = dischargeSubsystem;
             this.target = target;
             supplier = false;
+            waitDistance = 60;
+            addRequirements(dischargeSubsystem);
+        }
+
+        public GoToTargetWait(DischargeSubsystem dischargeSubsystem, int target, int waitDistance) {
+            this.dischargeSubsystem = dischargeSubsystem;
+            this.target = target;
+            supplier = false;
+            this.waitDistance = waitDistance;
             addRequirements(dischargeSubsystem);
         }
 
@@ -358,12 +368,12 @@ public class DischargeCommands {
         public void execute() {
             MotorControl.setMode(MotorControl.Mode.OFF);
             double curPos = dischargeSubsystem.getPosition();
-            if (curPos < 100) {
-                dischargeSubsystem.setRawPower(-dischargeSubsystem.slideHalfSpeed);
-            } else if (curPos > 300)
+            if (curPos < 200) {
+                dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesLowSpeed);
+            } else if (curPos > 450)
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesSpeed);
             else
-                dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesLowSpeed);
+                dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesHalfSpeed);
 //            if (dischargeSubsystem.getPosition() < 200 && !switched) {
 //                maxDuration = 2;
 //                elapsedTime.reset();
@@ -454,6 +464,26 @@ public class DischargeCommands {
             return true;
         }
     }
+
+    public static class DischargeHalfReleaseCmd extends CommandBase {
+        DischargeSubsystem dischargeSubsystem;
+
+        public DischargeHalfReleaseCmd(DischargeSubsystem dischargeSubsystem) {
+            this.dischargeSubsystem = dischargeSubsystem;
+            addRequirements(dischargeSubsystem);
+        }
+
+        @Override
+        public void initialize() {
+            dischargeSubsystem.halfReleaseSample();
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
+
 
     public static class DischargeClawTestCmd extends CommandBase {
         DischargeSubsystem dischargeSubsystem;
