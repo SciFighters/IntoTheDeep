@@ -19,6 +19,18 @@ public class SetStateCommands {
         }
     }
 
+    public static class ClimbStateCmd extends CommandBase {
+        @Override
+        public void initialize() {
+            Echo.setRobotState(RobotState.CLIMB);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
+
 
     public static class BasketStateCmd extends CommandBase {
         @Override
@@ -36,6 +48,42 @@ public class SetStateCommands {
         @Override
         public void initialize() {
             Echo.setRobotState(RobotState.CHAMBER);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
+
+    public static class HPIntakeStateCmd extends CommandBase {
+        @Override
+        public void initialize() {
+            Echo.setRobotState(RobotState.HPINTAKE);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
+
+    public static class AutoChamberStateCmd extends CommandBase {
+        @Override
+        public void initialize() {
+            Echo.setRobotState(RobotState.AUTOCHAMBER);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
+
+    public static class AutoIntakeStateCmd extends CommandBase {
+        @Override
+        public void initialize() {
+            Echo.setRobotState(RobotState.AUTOINTAKE);
         }
 
         @Override

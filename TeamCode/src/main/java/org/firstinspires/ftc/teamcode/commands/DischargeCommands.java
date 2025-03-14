@@ -161,13 +161,13 @@ public class DischargeCommands {
         private static int targetPosition = 0;
         private static int stayStillTarget = 0;
 
-        private final double goToKp = 8;
-        private final double stayStillKp = 10;
+        private final double goToKp = 5;
+        private final double stayStillKp = 4;
         //        private final double stayStillKi = 0.01;
 //        private double Integral = 0;
 //        private double lastTime = 0;
-        private final double goToMin = 0.2;
-        private final double stayStillMin = 0.2;
+        private final double goToMin = 0.08;
+        private final double stayStillMin = 0.08;
 //        private ElapsedTime elapsedTime = new ElapsedTime();
 
         public MotorControl(DischargeSubsystem dischargeSubsystem, Supplier<Double> manualPower,
@@ -234,9 +234,9 @@ public class DischargeCommands {
         }
 
         private double calculateGoToTargetPID(double error, int curPos) {
-            if (curPos < 60)
+            if (curPos < 80)
                 return 0.6;
-            if (curPos < 125)
+            if (curPos < 150)
                 return 0.75;
             if (Math.abs(error) >= 200)
                 return Math.signum(error); // Full power in the direction of the target
@@ -279,7 +279,7 @@ public class DischargeCommands {
 
         public GoToTarget(DischargeSubsystem dischargeSubsystem, int target) {
             this.target = target;
-            addRequirements(dischargeSubsystem);
+//            addRequirements(dischargeSubsystem);
         }
 
         @Override
@@ -300,11 +300,21 @@ public class DischargeCommands {
         Supplier<Integer> targetSupplier;
         final boolean supplier;
         boolean chamber = false;
+        int waitDistance;
 
         public GoToTargetWait(DischargeSubsystem dischargeSubsystem, int target) {
             this.dischargeSubsystem = dischargeSubsystem;
             this.target = target;
             supplier = false;
+            waitDistance = 60;
+            addRequirements(dischargeSubsystem);
+        }
+
+        public GoToTargetWait(DischargeSubsystem dischargeSubsystem, int target, int waitDistance) {
+            this.dischargeSubsystem = dischargeSubsystem;
+            this.target = target;
+            supplier = false;
+            this.waitDistance = waitDistance;
             addRequirements(dischargeSubsystem);
         }
 
@@ -335,7 +345,7 @@ public class DischargeCommands {
 
         public GoHomeCmd(DischargeSubsystem dischargeSubsystem) {
             this.dischargeSubsystem = dischargeSubsystem;
-            maxDuration = 3;
+            maxDuration = 4;
             addRequirements(dischargeSubsystem);
         }
 
@@ -358,12 +368,12 @@ public class DischargeCommands {
         public void execute() {
             MotorControl.setMode(MotorControl.Mode.OFF);
             double curPos = dischargeSubsystem.getPosition();
-            if (curPos < 60) {
-                dischargeSubsystem.setRawPower(-dischargeSubsystem.slideHalfSpeed);
-            } else if (curPos > 300)
+            if (curPos < 200) {
+                dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesLowSpeed);
+            } else if (curPos > 450)
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesSpeed);
             else
-                dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesLowSpeed);
+                dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesHalfSpeed);
 //            if (dischargeSubsystem.getPosition() < 200 && !switched) {
 //                maxDuration = 2;
 //                elapsedTime.reset();
@@ -455,6 +465,26 @@ public class DischargeCommands {
         }
     }
 
+    public static class DischargeHalfReleaseCmd extends CommandBase {
+        DischargeSubsystem dischargeSubsystem;
+
+        public DischargeHalfReleaseCmd(DischargeSubsystem dischargeSubsystem) {
+            this.dischargeSubsystem = dischargeSubsystem;
+            addRequirements(dischargeSubsystem);
+        }
+
+        @Override
+        public void initialize() {
+            dischargeSubsystem.halfReleaseSample();
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
+
+
     public static class DischargeClawTestCmd extends CommandBase {
         DischargeSubsystem dischargeSubsystem;
         Telemetry telemetry;
@@ -517,7 +547,7 @@ public class DischargeCommands {
     public static class ChamberDischargeCmd extends SequentialCommandGroup {
         public ChamberDischargeCmd(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
             addCommands(
-                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 140),
+                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 170),
                     //new WaitCommand(100),
                     new DischargeReleaseCmd(dischargeSubsystem), new WaitCommand(200),
                     new DischargeCommands.GoHomeCmd(dischargeSubsystem));
@@ -528,7 +558,7 @@ public class DischargeCommands {
     public static class AutoChamberDischargeCmd extends SequentialCommandGroup {
         public AutoChamberDischargeCmd(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
             addCommands(
-                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 150),
+                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 170),
                     //new WaitCommand(100),
                     new DischargeReleaseCmd(dischargeSubsystem));
             addRequirements(dischargeSubsystem);

@@ -23,36 +23,38 @@ public class LimeLightOpMode extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
+        // Ensure telemetry is transmitted at regular intervals
         telemetry.setMsTransmissionInterval(11);
 
+        // Initialize Limelight camera and ensure it's started
+//        limelight.shutdown(); // Stop the Limelight to reset it
+        // Start it again for the current run
+        limelight.pipelineSwitch(7);
         limelight.start();
-        limelight.pipelineSwitch(Pipelines.YELLOW.PIPELINE);
-        waitForStart();
+//        limelight.pipelineSwitch(Pipelines.BLUE.PIPELINE); // Switch to the blue pipeline
+        sleep(100); // Give the Limelight time to switch pipeline
+
+        waitForStart(); // Wait for the start of the teleop period
+
         while (opModeIsActive()) {
-//            limelight.pipelineSwitch(pipeLine);
+
+            sleep(100); // Give a small delay after each pipeline switch if switching frequently
+
             LLResult result = limelight.getLatestResult();
+
             if (result != null) {
-                if (result.isValid()) {
-//                    Pose3D botpose = result.getBotpose();
-                    multipleTelemetry.addData("0", result.getPythonOutput()[0]);
-                    multipleTelemetry.addData("1", result.getPythonOutput()[1]);
-                    multipleTelemetry.addData("2", result.getPythonOutput()[2]);
-                    multipleTelemetry.addData("3", result.getPythonOutput()[3]);
-                    multipleTelemetry.addData("4", result.getPythonOutput()[4]);
-//                    multipleTelemetry.addData("ty", result.getTy());
-
-
-                    multipleTelemetry.update();
-//                    multipleTelemetry.addData("ty", result.getTyNC());
-//                    multipleTelemetry.addData("Object size", result.getTa());
-//                    multipleTelemetry.addData("Botpose", botpose.toString());
-//                    multipleTelemetry.addData("Current Index", result.getPipelineIndex());
-                    dashboardTelemetry.update();
-                    telemetry.update();
-
-                }
+                multipleTelemetry.addData("0", result.getPythonOutput()[0]);
+                multipleTelemetry.addData("1", result.getPythonOutput()[1]);
+                multipleTelemetry.addData("2", result.getPythonOutput()[2]);
+                multipleTelemetry.addData("3", result.getPythonOutput()[3]);
+                multipleTelemetry.addData("4", result.getPythonOutput()[4]);
+                multipleTelemetry.addData("valid result", result.isValid());
+                multipleTelemetry.addData("limelight connected", limelight.isConnected());
+                multipleTelemetry.update();
             }
 
+            dashboardTelemetry.update();
+            telemetry.update(); // Update robot's telemetry
         }
     }
 }

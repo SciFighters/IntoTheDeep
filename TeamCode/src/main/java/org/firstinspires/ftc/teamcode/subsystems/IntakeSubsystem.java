@@ -22,48 +22,31 @@ public class IntakeSubsystem extends SubsystemBase {
     private final DcMotorEx lMotor;
     private final Servo hServo; // claw up & down
     private final Servo rServo; // claw rotation
-    private final CRServo screwServo;
+    private final Servo screwServo;
     MultipleTelemetry telemetry;
 
     int positionCorrection = 0;
     private double targetPos = -1;
-    private final int maxArmLength = 1700;
+    private final int maxArmLength = 2050;
     public int minSlidesPos = 10;
 
     public final int manualTicksPerSecond = 785;
     public final double slidesSpeed = 1;
     public final double slidesLowSpeed = 0.4;
+    public final double slidesHalfSpeed = 0.55;
     public boolean end = false;
     TouchSensor leftTouch, rightTouch;
     ElapsedTime screwTimer = new ElapsedTime();
-    private final double openScrewTime = 0.5;
-    private final double holdPower = 0;
-    private boolean opened = false;
+    public final double openScrewTime = 0.35;
 
-    @Override
-    public void periodic() {
-        if ((screwTimer.seconds() > openScrewTime) && Math.abs(screwServo.getPower()) > 0.2) {
-            if (screwServo.getPower() < 0) {
-                screwServo.setPower(holdPower);
-                opened = true;
-            } else {
-                screwServo.setPower(0);
-                opened = false;
-            }
-        }
-    }
-
-    public boolean isScrewOpened() {
-        return opened;
-    }
 
     public void openScrew() {
-        screwServo.setPower(-1);
+        screwServo.setPosition(0);
         screwTimer.reset();
     }
 
     public void closeScrew() {
-        screwServo.setPower(1);
+        screwServo.setPosition(1);
         screwTimer.reset();
     }
 
@@ -77,10 +60,10 @@ public class IntakeSubsystem extends SubsystemBase {
         lMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         hServo = hardwareMap.servo.get("heightServo");
         rServo = hardwareMap.servo.get("rotationServo");
-        screwServo = hardwareMap.crservo.get("spinServo");
+        screwServo = hardwareMap.servo.get("screwServo");
         leftTouch = hardwareMap.touchSensor.get("leftTouch");
 //        rightTouch = hardwareMap.touchSensor.get("rightTouch");
-
+        screwTimer.reset();
         //resetEncoders();
         this.telemetry = telemetry;
 
@@ -118,7 +101,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public double getAveragePosition() {
-        return ((double) rMotor.getCurrentPosition() + (double) lMotor.getCurrentPosition()) / 2 + positionCorrection;
+        return ((double) rMotor.getCurrentPosition() + (double) rMotor.getCurrentPosition()) / 2 + positionCorrection;
     }
 
     public void setRotationServoPosition(double position) {
@@ -138,7 +121,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public int getMotor2Position() {
-        return lMotor.getCurrentPosition() + positionCorrection;
+        return rMotor.getCurrentPosition() + positionCorrection;
     }
 
     public void setPositionCorrection(int pos) {
@@ -180,11 +163,11 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public double getCurrent() {
-        return (lMotor.getCurrent(CurrentUnit.AMPS) + lMotor.getCurrent(CurrentUnit.AMPS)) / 2;
+        return (rMotor.getCurrent(CurrentUnit.AMPS) + rMotor.getCurrent(CurrentUnit.AMPS)) / 2;
     }
 
     public double getPower() {
-        return (rMotor.getPower() + lMotor.getPower()) / 2;
+        return (rMotor.getPower() + rMotor.getPower()) / 2;
     }
 
 

@@ -12,7 +12,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.IntakeCommands;
-import org.firstinspires.ftc.teamcode.subsystems.ArmsStages;
 import org.firstinspires.ftc.teamcode.subsystems.ClawStages;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 
@@ -49,11 +48,12 @@ public class BasicIntakeTest extends CommandOpMode {
         X.whenPressed(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, false));
         dPadUp.whenPressed(new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.LOWER));
         dPadDown.whenPressed(new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.UPPER));
-        dPadRight.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.75));
-        dPadLeft.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.25));
+        dPadRight.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 1));
+        dPadLeft.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.5));
         back.whenPressed(new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem));
         leftBumper.whenPressed(new IntakeCommands.OpenScrewCmd(intakeSubsystem, false));
         rightBumper.whenPressed(new IntakeCommands.CloseScrewCmd(intakeSubsystem, false));
+        leftStickButton.whenPressed(new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.ROTATE_HEIGHT));
 
 
         //schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));
@@ -72,6 +72,7 @@ public class BasicIntakeTest extends CommandOpMode {
     public void run() {
         super.run();
         telemetry.addData("motor pos", intakeSubsystem.getAveragePosition());
+        telemetry.addData("current", intakeSubsystem.getCurrent());
         telemetry.update();
     }
 }
