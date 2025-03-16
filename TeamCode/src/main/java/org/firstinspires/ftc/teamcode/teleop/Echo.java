@@ -230,7 +230,7 @@ public class Echo extends CommandOpMode {
 
         mecanumDrive.setDefaultCommand(new MecanumCommands.PowerCmd(telemetry, mecanumDrive,
                 mecanumX, mecanumY, mecanumR,
-                () -> Math.max(driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), driverGamepad.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER)) * 0.5 + 0.5, true));
+                () -> Math.max(driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), driverGamepad.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER)) * 14 + 0.5, true));
 
 
         systemRightBumper.whenPressed(new SequentialCommandGroup(
@@ -564,7 +564,8 @@ public class Echo extends CommandOpMode {
         multipleTelemetry.addData("angle limelight", limeLightSubsystem.getAngle());
         multipleTelemetry.addData("pipeline", limeLightSubsystem.getCurrentPipeline());
         multipleTelemetry.addData("rawY", limeLightSubsystem.getRawY());
-        multipleTelemetry.addData("cm", limeLightSubsystem.getYDistance() / limeLightSubsystem.tickPerCM);
+        multipleTelemetry.addData("initialDistance",limeLightSubsystem.initialDistance);
+        multipleTelemetry.addData("cm", limeLightSubsystem.limelightInCm);
         multipleTelemetry.addData("x odometer limelight", limeLightSubsystem.getXDistanceOdometer());
         multipleTelemetry.addData("fhd", limeLightSubsystem.alignedY);
         telemetry.addData("servo angle", 1 - (limeLightSubsystem.getAngle() + 90) / 180);

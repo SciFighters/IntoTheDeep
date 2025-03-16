@@ -569,14 +569,14 @@ public class IntakeCommands {
             }
             addCommands(
                     new ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
-                    new WaitCommand(100),
+                    new WaitCommand(350),
                     new SetRotationCmd(intakeSubsystem, angle),
-                    new WaitCommand((long) wanted * 750),
+                    new WaitCommand((long) wanted * 950),
                     new OpenScrewCmd(intakeSubsystem, true),
                     new ClawStageCmd(intakeSubsystem, ClawStages.ROTATE_HEIGHT),
                     //new WaitCommand(100),
                     new RotateBackCmd(intakeSubsystem),
-                    new WaitCommand((long) Math.min(1 - wanted, wanted) * 500),
+                    new WaitCommand((long) wanted * 750),
                     new ClawStageCmd(intakeSubsystem, ClawStages.INTAKE)
             );
             addRequirements(intakeSubsystem);

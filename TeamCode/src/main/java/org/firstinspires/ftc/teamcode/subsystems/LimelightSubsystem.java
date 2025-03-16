@@ -10,13 +10,14 @@ import org.opencv.core.Mat;
 public class LimelightSubsystem extends SubsystemBase {
     public final Limelight3A limelight;
     MultipleTelemetry telemetry;
-    int pipeline = Pipelines.BLUE.PIPELINE;
+    int pipeline = Pipelines.YELLOW.PIPELINE;
     LLResult result;
     final double limelightH = 41.5, sampleH = 3.8, limelightAngle = 27.6;
-    int distance;
+    public int distance = 0;
     public final double middleOfScreen = 300, tickPerCM = 19.34, distanceFromArmStart = 25;
     public double alignedY = 0;
-    public double limelightInCm;
+    public double limelightInCm = 0;
+    public double initialDistance = 0;
     public double xToOdometer = 8.76;
 
     public LimelightSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
@@ -63,9 +64,9 @@ public class LimelightSubsystem extends SubsystemBase {
 
     public int getYDistance() {
         updateResults();
-        distance = (int) (((limelightH - sampleH) * Math.tan(Math.toRadians(-result.getPythonOutput()[1] / 240 * 42 + limelightAngle)) + distanceFromArmStart + 31.5) * tickPerCM);
-        limelightInCm = (distance - 580) / 48.2;
-        distance = (int) (limelightInCm * 31.85 + 861);
+        initialDistance = (int) (((limelightH - sampleH) * Math.tan(Math.toRadians(-result.getPythonOutput()[1] / 240 * 42 + limelightAngle)) + distanceFromArmStart + 31.5) * tickPerCM);
+        limelightInCm = initialDistance * 0.0319 - 29.36 -0.3;
+        distance = (int) (limelightInCm * 31.73 + 868);
         alignedY = distance;
         return distance;
     }
