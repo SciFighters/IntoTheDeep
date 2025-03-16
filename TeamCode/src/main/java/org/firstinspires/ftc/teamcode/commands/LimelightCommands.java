@@ -141,14 +141,14 @@ public class LimelightCommands {
 //                            addCommands(new InstantCommand(() -> mecanumDrive.drive(-0.3, 0, 0, 0.2)).withTimeout(300));
 //                        }
 //                    }),
-                    new InstantCommand(() -> {
-                        if (limelightSubsystem.getYDistance() < 1350) {
-                            mecanumDrive.setMoverServo(0.5);
-                            waitTime = 500;
-                        }
-                    }),
-                    new WaitCommand(wait.get()),
-                    new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)),
+//                    new InstantCommand(() -> {
+//                        if (limelightSubsystem.getYDistance() < 1350) {
+//                            mecanumDrive.setMoverServo(0.5);
+//                            waitTime = 500;
+//                        }
+//                    }),
+//                    new WaitCommand(wait.get()),
+//                    new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)),
                     new AlignXCmd(limelightSubsystem, mecanumDrive)/*.withTimeout(1000)*/,
                     new AlignXCmd(limelightSubsystem, mecanumDrive).withTimeout(250),
                     new InstantCommand(() -> {
@@ -158,7 +158,7 @@ public class LimelightCommands {
                             angle = 0;
                         }
                     }),
-                    new IntakeCommands.StartIntakeCmd(intakeSubsystem, limelightSubsystem::getYDistance, angle > 0.5),
+                    new IntakeCommands.StartIntakeCmd(intakeSubsystem, limelightSubsystem::getYDistance, () -> (angle > 0.6 || limelightSubsystem.getYDistance() < 1350)),
 //                    new IntakeCommands.SetRotationCmd(intakeSubsystem, limelightSubsystem::getAngle),
 //                    new WaitCommand(300),
 //                    new IntakeCommands.OpenScrewCmd(intakeSubsystem, true),

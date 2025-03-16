@@ -134,7 +134,7 @@ public class MecanumDrive extends SubsystemBase {
         br.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         startingPosition = start;
-        distanceSensor = hm.get(DistanceSensor.class, "distanceSensor");
+//        distanceSensor = hm.get(DistanceSensor.class, "distanceSensor");
         this.startAngle = startAngle;
 //        Translation2d OflLocation = new Translation2d(100, 164);
 //        Translation2d OfrLocation = new Translation2d(100, -164);

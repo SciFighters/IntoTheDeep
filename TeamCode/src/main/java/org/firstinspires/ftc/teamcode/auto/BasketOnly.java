@@ -55,7 +55,7 @@ public class BasketOnly extends CommandOpMode {
         schedule(new SequentialCommandGroup(
 
                 new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highBasketHeight),
-                new WaitCommand(450),
+                new WaitCommand(900),
                 new ParallelCommandGroup( // discharge
                         new SequentialCommandGroup(
 //                                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.31, 0.43, 203, 0.03, 0.8),
@@ -64,7 +64,7 @@ public class BasketOnly extends CommandOpMode {
                         new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 2100)),
                 new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
 
-                intakeAction(0.345, 0.55, 203),
+                intakeAction(0.355, 0.542, 203),
 
                 new ParallelDeadlineGroup( // before discharge
                         new DischargeCommands.SequentialRaceWrapper(
@@ -84,7 +84,7 @@ public class BasketOnly extends CommandOpMode {
                 // discharge
                 dischargeAction(0.24, 0.355, 189),
 
-                intakeAction(0.255, 0.5, 189),
+                intakeAction(0.26, 0.5, 189),
 
 
                 new ParallelCommandGroup(
@@ -92,7 +92,7 @@ public class BasketOnly extends CommandOpMode {
                                 new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
 //                                new ParallelCommandGroup(
                                 new DischargeCommands.GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highBasketHeight)),
-//                   בםגק שכאקר צקקאופ 'ןאי                      new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 1200))),
+//                              new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 1200))),
                         new SequentialCommandGroup(
                                 new WaitCommand(1200),
                                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.3, 0.44, 197, 0.03, 1))
@@ -114,7 +114,7 @@ public class BasketOnly extends CommandOpMode {
                         ),
                         new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 1800)
                 ),
-                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.285, 0.625, 180, 0.015, 0.9),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.275, 0.645, 180, 0.015, 0.9),
                 new WaitCommand(100),
                 new IntakeCommands.SampleGroundIntakeCmd(intakeSubsystem),
                 new ParallelCommandGroup(
@@ -134,15 +134,38 @@ public class BasketOnly extends CommandOpMode {
                 new ParallelCommandGroup(
                         new InstantCommand(() -> mecanumDrive.setMoverServo(0)),
                         new SequentialCommandGroup(
-                                new MecanumCommands.ConstantVelocityGoPastCmd(telemetry, mecanumDrive, 0.8, 1.6, 270, 0.01, 0.8, 0.65, 0.2),
-                                new MecanumCommands.ConstantVelocityGotoCmd(telemetry, mecanumDrive, 2, 1.6, 3, 0, 0.03, 0.5)),
+                                new MecanumCommands.ConstantVelocityGoPastCmd(telemetry, mecanumDrive, 0.8, 1.6, 270, 0.01, 1, 0.65, 0.2),
+                                new MecanumCommands.ConstantVelocityGotoCmd(telemetry, mecanumDrive, 4, 1.6, 270, 0, 1).withTimeout(750)),
                         new SequentialCommandGroup(
                                 new WaitCommand(1500),
                                 new DischargeCommands.GoHomeCmd(dischargeSubsystem)
                         )
 
                 ),
-                new LimelightCommands.LimelightCompleteSubIntake(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive)
+                new LimelightCommands.LimelightStartIntake(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive),
+
+                new ParallelCommandGroup( // discharge
+                        new SequentialCommandGroup(
+                                new WaitCommand(500),
+                                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.26, 0.32, 203, 0.03, 0.8)//preload discharge
+                        ),
+                        new SequentialCommandGroup(
+                                new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
+                                new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highBasketHeight)
+                        )),
+                new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
+
+                new ParallelCommandGroup(
+                        new InstantCommand(() -> mecanumDrive.setMoverServo(0)),
+                        new SequentialCommandGroup(
+                                new MecanumCommands.ConstantVelocityGoPastCmd(telemetry, mecanumDrive, 0.8, 1.6, 270, 0.01, 1, 0.65, 0.2),
+                                new MecanumCommands.ConstantVelocityGotoCmd(telemetry, mecanumDrive, 4, 1.6, 270, 0, 1).withTimeout(750)),
+                        new SequentialCommandGroup(
+                                new WaitCommand(1500),
+                                new DischargeCommands.GoHomeCmd(dischargeSubsystem)
+                        )
+
+                )
 
 
 //                new ParallelCommandGroup(

@@ -132,7 +132,7 @@ public class Echo extends CommandOpMode {
         while (opModeInInit()) {
             super.run();
         }
-//        limeLightSubsystem.startLimelight();
+        limeLightSubsystem.startLimelight();
         schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));
         schedule(new DischargeCommands.MotorControl(dischargeSubsystem, systemGamepad::getRightY, true, telemetry));
         mecanumDrive.setHeading(SavedVariables.angle);
@@ -259,7 +259,7 @@ public class Echo extends CommandOpMode {
     }
 
     public void basketBindings() {
-        driverA.whenPressed(new MecanumCommands.SetExtraRotationCmd(mecanumDrive, 225));
+//        driverA.whenPressed(new MecanumCommands.SetExtraRotationCmd(mecanumDrive, 225));
 
         driverDPadDown.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> -0.25, () -> 0.0,
                 () -> 1.0, true));
@@ -480,7 +480,7 @@ public class Echo extends CommandOpMode {
         systemBack.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
 
         driverBack.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
-        driverA.whenPressed(new MecanumCommands.SetExtraRotationCmd(mecanumDrive, 225));
+//        driverA.whenPressed(new MecanumCommands.SetExtraRotationCmd(mecanumDrive, 225));
         systemStart.toggleWhenPressed(new InstantCommand(() -> limeLightSubsystem.setPipeline(Pipelines.YELLOW)), new InstantCommand(() -> limeLightSubsystem.setPipeline(Pipelines.BLUE)));
     }
 
@@ -513,7 +513,7 @@ public class Echo extends CommandOpMode {
         systemBack.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
 
         driverBack.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
-        driverA.whenPressed(new MecanumCommands.SetExtraRotationCmd(mecanumDrive, 225));
+//        driverA.whenPressed(new MecanumCommands.SetExtraRotationCmd(mecanumDrive, 225));
         systemStart.toggleWhenPressed(new InstantCommand(() -> limeLightSubsystem.setPipeline(Pipelines.YELLOW)), new InstantCommand(() -> limeLightSubsystem.setPipeline(Pipelines.BLUE)));
 
         //---climb---
@@ -556,7 +556,7 @@ public class Echo extends CommandOpMode {
         telemetry.addData("intakePower", intakeSubsystem.getPower());
         telemetry.addData("currentIntake", intakeSubsystem.getCurrent());
 
-        //---limelight---
+//        ---limelight---
         telemetry.addLine("---limelight---");
         telemetry.addData("running", limeLightSubsystem.limelight.isRunning());
         multipleTelemetry.addData("x limelight", limeLightSubsystem.getXDistance());

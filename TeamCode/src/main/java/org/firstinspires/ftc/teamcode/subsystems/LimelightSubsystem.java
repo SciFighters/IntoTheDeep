@@ -36,15 +36,15 @@ public class LimelightSubsystem extends SubsystemBase {
     public double getXDistanceOdometer() {
 //        double alpha = getXDistance() / 320 * 54.5;
 //        return  Math.tan(Math.toRadians(alpha)) * getYDistance();
-        double rawY = getRawY() + 240;
-        double y = getYDistance();
-        if (rawY == 0) {
-            rawY = 1;
-        }
-        double x = getXDistance();
-
-        return x / rawY * y;
-
+//        double rawY = getRawY() + 240;
+//        double y = getYDistance();
+//        if (rawY == 0) {
+//            rawY = 1;
+//        }
+//        double x = getXDistance();
+//
+//        return x / rawY * y;
+        return 1;
     }
 
     public double getAngle() {

@@ -18,7 +18,7 @@ public class EchoBlue extends Echo {
     @Override
     public void initialize() {
         super.initialize();
-        limeLightSubsystem.setPipeline(Pipelines.BLUE);
+//        limeLightSubsystem.setPipeline(Pipelines.BLUE);
     }
 
     @Override
@@ -56,11 +56,11 @@ public class EchoBlue extends Echo {
                 new SetStateCommands.BasketStateCmd(), //change to basket state
                 new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highBasketHeight)));
 
-        systemB.whenPressed(new SequentialCommandGroup(
-                new LimelightCommands.LimelightCompleteSubIntake(limeLightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive)));
-        systemX.whenPressed(new SequentialCommandGroup(
-                new LimelightCommands.LimelightStartIntake(limeLightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive),
-                new SetStateCommands.IntakeStateCmd()));
+//        systemB.whenPressed(new SequentialCommandGroup(
+//                new LimelightCommands.LimelightCompleteSubIntake(limeLightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive)));
+//        systemX.whenPressed(new SequentialCommandGroup(
+//                new LimelightCommands.LimelightStartIntake(limeLightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive),
+//                new SetStateCommands.IntakeStateCmd()));
 
         systemDPadUp.whenPressed(new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem));
         systemDPadLeft.whenPressed(new DischargeCommands.HpDischarge(dischargeSubsystem));

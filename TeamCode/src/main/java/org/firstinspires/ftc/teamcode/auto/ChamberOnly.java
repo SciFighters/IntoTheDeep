@@ -115,7 +115,7 @@ public class ChamberOnly extends CommandOpMode {
                                         wait(500), moverGoGo(0.3)),
                                 goTo(2.6, 0.22, -90, 0.04, 1), //intake position
                                 new SequentialCommandGroup(
-                                        wait(400),
+                                        wait(1000),
                                         new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 2050))),
                         //goTo(2.7, 0.22, -90, 0.04, 1),
                         new IntakeCommands.SampleGroundIntakeCmd(intakeSubsystem),

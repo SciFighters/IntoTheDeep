@@ -547,7 +547,7 @@ public class DischargeCommands {
     public static class ChamberDischargeCmd extends SequentialCommandGroup {
         public ChamberDischargeCmd(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
             addCommands(
-                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 170),
+                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 10),
                     //new WaitCommand(100),
                     new DischargeReleaseCmd(dischargeSubsystem), new WaitCommand(200),
                     new DischargeCommands.GoHomeCmd(dischargeSubsystem));
@@ -558,7 +558,7 @@ public class DischargeCommands {
     public static class AutoChamberDischargeCmd extends SequentialCommandGroup {
         public AutoChamberDischargeCmd(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
             addCommands(
-                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 170),
+                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 10),
                     //new WaitCommand(100),
                     new DischargeReleaseCmd(dischargeSubsystem));
             addRequirements(dischargeSubsystem);

@@ -321,7 +321,7 @@ public class MecanumCommands {
         @Override
         public boolean isFinished() {
             return (((Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) || (900 <= wantedDistance))
-                    && ((Math.abs(wantedAngle + 180 - mecanumDrive.getAdjustedHeading()) < 10) || noRotation));
+                    && ((Math.abs(wantedAngle + 180 - mecanumDrive.getAdjustedHeading()) < 6) || noRotation));
         }
 
         @Override

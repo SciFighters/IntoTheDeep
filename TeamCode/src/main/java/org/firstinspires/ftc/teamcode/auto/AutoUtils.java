@@ -20,7 +20,7 @@ public class AutoUtils {
     public static void initCommands(CommandOpMode commandOpMode, DischargeSubsystem dischargeSubsystem, IntakeSubsystem intakeSubsystem) {
         commandOpMode.schedule(new SequentialCommandGroup(
 
-                new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem),
+//                new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem),
                 new DischargeCommands.DischargeGrabCmd(dischargeSubsystem),
                 new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.UPPER),
                 //new IntakeCommands.Wait(intakeSubsystem, 1),

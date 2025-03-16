@@ -427,9 +427,9 @@ public class IntakeCommands {
             StartIntake(subsystem, auto, position);
         }
 
-        public StartIntakeCmd(IntakeSubsystem subsystem, Supplier<Integer> position, boolean magniv) {
+        public StartIntakeCmd(IntakeSubsystem subsystem, Supplier<Integer> position, Supplier<Boolean> magniv) {
 //            StartIntake(subsystem, auto, position);
-            int angle = magniv ? 1 : 0;
+            int angle = magniv.get() ? 1 : 0;
             addCommands(
                     new ClawStageCmd(subsystem, ClawStages.UPPER),
                     new SetRotationCmd(subsystem, angle),
@@ -555,7 +555,7 @@ public class IntakeCommands {
                     new ClawStageCmd(intakeSubsystem, ClawStages.ROTATE_HEIGHT),
                     //new WaitCommand(500),
                     new RotateBackCmd(intakeSubsystem),
-                    new WaitCommand((long) Math.abs(angle - 0.5) * 500),
+                    new WaitCommand((long) Math.abs(angle) * 500),
                     new ClawStageCmd(intakeSubsystem, ClawStages.INTAKE)
             );
             addRequirements(intakeSubsystem);
@@ -576,7 +576,7 @@ public class IntakeCommands {
                     new ClawStageCmd(intakeSubsystem, ClawStages.ROTATE_HEIGHT),
                     //new WaitCommand(100),
                     new RotateBackCmd(intakeSubsystem),
-                    new WaitCommand((long) Math.abs(wanted - 0.5) * 500),
+                    new WaitCommand((long) Math.min(1 - wanted, wanted) * 500),
                     new ClawStageCmd(intakeSubsystem, ClawStages.INTAKE)
             );
             addRequirements(intakeSubsystem);
