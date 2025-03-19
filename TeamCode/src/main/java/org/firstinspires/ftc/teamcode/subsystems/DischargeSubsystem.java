@@ -35,7 +35,7 @@ public class DischargeSubsystem extends SubsystemBase {
     public double minLiftPos = 20;
     public final double minClimbLiftPos = 170;
 
-    public final int highChamberHeight = 700;//880
+    public final int highChamberHeight = 720;//880
     public final int lowChamberHeight = 350;
     public final int chamberReleaseDeltaSlides = 100;
 
@@ -45,9 +45,8 @@ public class DischargeSubsystem extends SubsystemBase {
 
     public final int manualTicksPerSecond = 1200;
     public final double slidesSpeed = 1;
-    public final double slidesHalfSpeed = 0.55;
-    public final double slidesLowSpeed = 0.475;//0.7
-    PIDFCoefficients pidf = new PIDFCoefficients(15, 0.05, 0, 0);
+    public final double slidesHalfSpeed = 0.675;
+    public final double slidesLowSpeed = 0.5;//0.7
 
 
     public DischargeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {

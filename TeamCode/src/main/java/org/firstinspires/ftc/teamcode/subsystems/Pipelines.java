@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 public enum Pipelines {
-    RED(6),
+    RED(8),
     YELLOW(9),
     BLUE(7);
     public final int PIPELINE;

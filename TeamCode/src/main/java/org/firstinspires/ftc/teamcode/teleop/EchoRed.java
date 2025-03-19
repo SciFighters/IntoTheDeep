@@ -41,10 +41,10 @@ import java.util.function.Supplier;
 
 @TeleOp
 
-public class EchoBlue extends Echo {
+public class EchoRed extends Echo {
     @Override
     public void initialize() {
         super.initialize();
-        pipeline = Pipelines.BLUE;
+        pipeline = Pipelines.RED;
     }
 }

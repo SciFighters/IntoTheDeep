@@ -6,15 +6,14 @@ import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.InstantCommand;
+import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
-import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.button.Button;
 import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.command.button.Trigger;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.SavedVariables;
@@ -76,19 +75,15 @@ public class Echo extends CommandOpMode {
     Button systemStart;
     Button systemLeftStick, systemRightStick;
     Button driverLeftStick, driverRightStick;
+    Trigger systemRTrigger;
+    Trigger systemLTrigger;
     Queue<CommandBase> queue = new LinkedList<>();
     Runnable pullQueue;
     boolean queueable = false;
     BooleanSupplier queueableSup = () -> !queueable;
     long swapTime = 0;
+    public Pipelines pipeline;
 
-    public CommandBase pullQueue() {
-        if (queue.size() > 0) {
-            return queue.remove();
-        }
-        return new WaitCommand(0);
-
-    }
 
     @Override
     public void initialize() {
@@ -185,25 +180,37 @@ public class Echo extends CommandOpMode {
                     break;
                 case CLIMB:
                     climbBindings();
+                    break;
                 case AUTOINTAKE:
                     autoIntakeBindings();
+                    break;
 
 
             }
         }
         if (driverX.get() && driverStart.get()) {
             mecanumDrive.resetHeading();
+            mecanumDrive.setHeading(90);
         }
         if (robotState == RobotState.CLIMB && System.currentTimeMillis() > swapTime + 500 && gamepad2.ps) {
             robotState = RobotState.NONE;
             swapTime = System.currentTimeMillis();
         } else if (robotState == RobotState.NONE && System.currentTimeMillis() > swapTime + 500 && gamepad2.ps) {
             robotState = RobotState.CLIMB;
+            mecanumDrive.setMoverServo(0.18);
             swapTime = System.currentTimeMillis();
         }
         if (robotState == RobotState.CLIMB)
             DischargeCommands.MotorControl.setMode(DischargeCommands.MotorControl.Mode.DO_NOTHING);
+        if (systemGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.5) {
+            if (limeLightSubsystem.getCurrentPipeline() != pipeline.PIPELINE)
+                limeLightSubsystem.setPipeline(pipeline);
+        }
 
+        if (systemGamepad.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.5) {
+            if (limeLightSubsystem.getCurrentPipeline() != Pipelines.YELLOW.PIPELINE)
+                limeLightSubsystem.setPipeline(Pipelines.YELLOW);
+        }
 
 
         //if (systemA.get() && controllersState == RobotState.INTAKE)
@@ -216,6 +223,12 @@ public class Echo extends CommandOpMode {
     }
 
     public void chamberBindings() {
+        intakeSubsystem.setDefaultCommand(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem, systemGamepad::getLeftY));
+        systemB.whenPressed(new IntakeCommands.StartIntakeCmd(intakeSubsystem));
+
+
+        driverB.whenPressed(new ClimbCommands.moveWinchByTime(climbSubsystem, 1, "both", 5000));
+
         systemRightStick.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
 
         driverDPadDown.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> -0.25, () -> 0.0,
@@ -254,11 +267,14 @@ public class Echo extends CommandOpMode {
 
         driverBack.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
         driverRightBumper.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setWentWentServo(0.5)), new InstantCommand(() -> mecanumDrive.setWentWentServo(1)));
-        driverLeftBumper.whenPressed(() -> mecanumDrive.resetPos(new Point(0.9, 1)));
+        driverLeftBumper.whenPressed(new DischargeCommands.ChamberDischargeCmd(dischargeSubsystem, telemetry));
 
     }
 
     public void basketBindings() {
+
+        driverB.whenPressed(new ClimbCommands.moveWinchByTime(climbSubsystem, 1, "both", 5000));
+
 //        driverA.whenPressed(new MecanumCommands.SetExtraRotationCmd(mecanumDrive, 225));
 
         driverDPadDown.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> -0.25, () -> 0.0,
@@ -308,6 +324,9 @@ public class Echo extends CommandOpMode {
     }
 
     public void intakeBindings() {
+        driverB.whenPressed(new ClimbCommands.moveWinchByTime(climbSubsystem, 1, "both", 5000));
+
+
         driverLeftStick.whenPressed(() -> limeLightSubsystem.limelight.captureSnapshot("la shot"));
 //        mecanumDrive.setDefaultCommand(new MecanumCommands.PowerCmd(telemetry, mecanumDrive,
 //                systemGamepad::getRightX, mecanumY, () -> 0.0,
@@ -378,10 +397,12 @@ public class Echo extends CommandOpMode {
     }
 
     public void noneBindings() {
-        driverB.whenPressed(() -> mecanumDrive.resetYaw());
-        driverRightBumper.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setWentWentServo(0.5)), new InstantCommand(() -> mecanumDrive.setWentWentServo(1)));
+
+        driverB.whenPressed(new ClimbCommands.moveWinchByTime(climbSubsystem, 1, "both", 5000));
+
 
         driverLeftStick.whenPressed(() -> limeLightSubsystem.limelight.captureSnapshot("la shot"));
+
 
         systemLeftStick.whenPressed(new DischargeCommands.ResetDischarge(dischargeSubsystem));
         systemRightBumper.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
@@ -444,14 +465,18 @@ public class Echo extends CommandOpMode {
                         new IntakeCommands.WaitForTransferEnd(),
                         new SetStateCommands.BasketStateCmd(), //change to chamber state
                         //new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight),
-                        new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highBasketHeight)));
+                        new ParallelCommandGroup(
+                                new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highBasketHeight),
+                                new IntakeCommands.SlideUntilCmd(intakeSubsystem, 1000, 1, false))));
 //        systemY.whenPressed(new LimelightCommands.AlignXCmd(limeLightSubsystem, mecanumDrive));
 
         systemA.whenPressed(
                 new SequentialCommandGroup(
                         new IntakeCommands.WaitForTransferEnd(),
                         new SetStateCommands.ChamberStateCmd(), //change to chamber state
-                        new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight)));
+                        new ParallelCommandGroup(
+                                new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight),
+                                new IntakeCommands.SlideUntilCmd(intakeSubsystem, 1000, 1, false))));
 
 
         systemX.whenPressed(new SequentialCommandGroup(
@@ -479,9 +504,10 @@ public class Echo extends CommandOpMode {
 //                    systemDPadLeft.whenPressed(new LimelightCommands.AlignXCmd(limeLightSubsystem, mecanumDrive));
         systemBack.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
 
-        driverBack.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
+        driverRightBumper.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
 //        driverA.whenPressed(new MecanumCommands.SetExtraRotationCmd(mecanumDrive, 225));
-        systemStart.toggleWhenPressed(new InstantCommand(() -> limeLightSubsystem.setPipeline(Pipelines.YELLOW)), new InstantCommand(() -> limeLightSubsystem.setPipeline(Pipelines.BLUE)));
+        systemStart.toggleWhenPressed(new InstantCommand(() -> limeLightSubsystem.setPipeline(Pipelines.YELLOW)), new InstantCommand(() -> limeLightSubsystem.setPipeline(pipeline)));
+
     }
 
     public void climbBindings() {
@@ -514,9 +540,10 @@ public class Echo extends CommandOpMode {
 
         driverBack.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
 //        driverA.whenPressed(new MecanumCommands.SetExtraRotationCmd(mecanumDrive, 225));
-        systemStart.toggleWhenPressed(new InstantCommand(() -> limeLightSubsystem.setPipeline(Pipelines.YELLOW)), new InstantCommand(() -> limeLightSubsystem.setPipeline(Pipelines.BLUE)));
+        systemStart.toggleWhenPressed(new InstantCommand(() -> limeLightSubsystem.setPipeline(Pipelines.YELLOW)), new InstantCommand(() -> limeLightSubsystem.setPipeline(pipeline)));
 
-        //---climb---
+        driverB.whenPressed(new ClimbCommands.moveWinchByTime(climbSubsystem, 1, "both", 7500));
+        systemA.whenPressed(new ClimbCommands.moveWinchByTime(climbSubsystem, -0.02, "hi mate", 4000));
 
         climbSubsystem.setDefaultCommand(new ClimbCommands.SetWinchPower(climbSubsystem, () -> -systemGamepad.getRightY(), () -> -systemGamepad.getLeftY()));
 
@@ -580,11 +607,17 @@ public class Echo extends CommandOpMode {
         telemetry.addLine("---limelight---");
         multipleTelemetry.addData("pos", mecanumDrive.getPosition());
         multipleTelemetry.addData("savedAngle", SavedVariables.angle);
-        multipleTelemetry.addData("bl", mecanumDrive.bl.getCurrentPosition());
-        multipleTelemetry.addData("br", mecanumDrive.br.getCurrentPosition());
-        multipleTelemetry.addData("fl", mecanumDrive.fl.getCurrentPosition());
-        multipleTelemetry.addData("fr", mecanumDrive.fr.getCurrentPosition());
+//        multipleTelemetry.addData("bl", mecanumDrive.bl.getCurrentPosition());
+//        multipleTelemetry.addData("br", mecanumDrive.br.getCurrentPosition());
+//        multipleTelemetry.addData("fl", mecanumDrive.fl.getCurrentPosition());
+//        multipleTelemetry.addData("fr", mecanumDrive.fr.getCurrentPosition());
+        multipleTelemetry.addData("flPower", mecanumDrive.fl.getPower());
+        multipleTelemetry.addData("frPower", mecanumDrive.fr.getPower());
+        multipleTelemetry.addData("blPower", mecanumDrive.bl.getPower());
+        multipleTelemetry.addData("brPower", mecanumDrive.br.getPower());
         multipleTelemetry.addData("heading", mecanumDrive.getHeading());
+        multipleTelemetry.addData("driverx", mecanumX.get());
+        multipleTelemetry.addData("drivery", mecanumY.get());
 //        multipleTelemetry.addData("servo pos", intakeSubsystem.getZServoPosition());
 //        telemetry.addData("y saved",SavedVariables.y);
 //        telemetry.addData("robot x,y", mecanumDrive.getPosition());

@@ -368,9 +368,9 @@ public class DischargeCommands {
         public void execute() {
             MotorControl.setMode(MotorControl.Mode.OFF);
             double curPos = dischargeSubsystem.getPosition();
-            if (curPos < 200) {
+            if (curPos < 160) {
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesLowSpeed);
-            } else if (curPos > 450)
+            } else if (curPos > 350)
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesSpeed);
             else
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesHalfSpeed);
@@ -547,7 +547,7 @@ public class DischargeCommands {
     public static class ChamberDischargeCmd extends SequentialCommandGroup {
         public ChamberDischargeCmd(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
             addCommands(
-                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 180),
+                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 205),
                     //new WaitCommand(100),
                     new DischargeReleaseCmd(dischargeSubsystem), new WaitCommand(200),
                     new DischargeCommands.GoHomeCmd(dischargeSubsystem));
@@ -558,7 +558,7 @@ public class DischargeCommands {
     public static class AutoChamberDischargeCmd extends SequentialCommandGroup {
         public AutoChamberDischargeCmd(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
             addCommands(
-                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 10),
+                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 205),
                     //new WaitCommand(100),
                     new DischargeReleaseCmd(dischargeSubsystem));
             addRequirements(dischargeSubsystem);

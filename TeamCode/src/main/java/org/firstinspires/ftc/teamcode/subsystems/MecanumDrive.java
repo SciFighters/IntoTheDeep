@@ -248,7 +248,7 @@ public class MecanumDrive extends SubsystemBase {
     }
 
     public void resetHeading() {
-        correctedHeading = getHeading();
+        imu.resetYaw();
     }
 
     public void setHeading(double heading) {

@@ -18,7 +18,7 @@ public class PositionFinder extends CommandOpMode {
 
     @Override
     public void initialize() {
-        mecanumDrive = new MecanumDrive(multipleTelemetry, hardwareMap, new Point(0.8, 0.22), 180, this);
+        mecanumDrive = new MecanumDrive(multipleTelemetry, hardwareMap, new Point(1.8, 0.2), 0, this);
 
 
     }

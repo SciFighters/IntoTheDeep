@@ -155,10 +155,10 @@ public class IntakeCommands {
         public void execute() {
             int pos = intakeSubsystem.getMotorPosition();
             if (initTime) {
-                intakeSubsystem.setRawPower(-0.4);
-            } else if (pos > 450.0) {
+                intakeSubsystem.setRawPower(-intakeSubsystem.slidesHalfSpeed);
+            } else if (pos > 320.0) {
                 intakeSubsystem.setRawPower(-intakeSubsystem.slidesSpeed);
-            } else if (pos > 200) {
+            } else if (pos > 140) {
                 intakeSubsystem.setRawPower(-intakeSubsystem.slidesHalfSpeed);
             } else {
                 intakeSubsystem.setRawPower(-intakeSubsystem.slidesLowSpeed);
@@ -227,10 +227,7 @@ public class IntakeCommands {
 
         @Override
         public void initialize() {
-            if (intakeSubsystem.getZServoPosition() > 0.5)
-                intakeSubsystem.setRotationServoPosition(1);
-            else
-                intakeSubsystem.setRotationServoPosition(0);
+            intakeSubsystem.setRotationServoPosition(0.5);
         }
 
         @Override
@@ -261,11 +258,14 @@ public class IntakeCommands {
         @Override
         public void initialize() {
             if (limelight) {
-                position = (positionSupplier.get() > 0) ? positionSupplier.get() : 180 + positionSupplier.get();
-                double wanted = ((position / 180 - 0.5) * 2 / 3 + 0.5);
-                if (wanted > 0.75) {
-                    wanted = 0;
-                }
+//                position = (positionSupplier.get() > 0) ? positionSupplier.get() : 180 + positionSupplier.get();
+//                double wanted = ((position / 180 - 0.5) * 2 / 3 + 0.5);
+//                if (wanted > 0.75) {
+//                    wanted = 0;
+//                }
+                position = positionSupplier.get() + 90;
+                double wanted = position / 180;
+                wanted = (wanted - 0.5) * 2 / 3 + 0.5;
                 intakeSubsystem.setRotationServoPosition(wanted);//((1 - (positionSupplier.get() + 90) / 180 - 0.5) * 2 / 3 + 0.5)
 
             } else
@@ -429,9 +429,9 @@ public class IntakeCommands {
 
         public StartIntakeCmd(IntakeSubsystem subsystem, Supplier<Integer> position, Supplier<Boolean> magniv) {
 //            StartIntake(subsystem, auto, position);
-            int angle = magniv.get() ? 1 : 0;
+            double angle = 0.5;
             addCommands(
-                    new ClawStageCmd(subsystem, ClawStages.UPPER),
+//                    new ClawStageCmd(subsystem, ClawStages.UPPER),
                     new SetRotationCmd(subsystem, angle),
                     new SlideGotoCmd(subsystem, position),
                     new ClawStageCmd(subsystem, ClawStages.LOWER));
@@ -443,16 +443,16 @@ public class IntakeCommands {
         private void StartIntake(IntakeSubsystem subsystem, boolean auto, int position) {
             if (auto) {
                 addCommands(
-                        new ClawStageCmd(subsystem, ClawStages.UPPER),
-                        new SetRotationCmd(subsystem, 0),
+//                        new ClawStageCmd(subsystem, ClawStages.UPPER),
+                        new SetRotationCmd(subsystem, 0.5),
                         new SlideGotoCmd(subsystem, position),
                         new ClawStageCmd(subsystem, ClawStages.INTAKE)
                 );
 
             } else {
                 addCommands(
-                        new ClawStageCmd(subsystem, ClawStages.UPPER),
-                        new SetRotationCmd(subsystem, 0),
+//                        new ClawStageCmd(subsystem, ClawStages.UPPER),
+                        new SetRotationCmd(subsystem, 0.5),
                         new SlideUntilCmd(subsystem, position, 1, true),
                         new WaitCommand(1000),
                         new ClawStageCmd(subsystem, ClawStages.INTAKE)
@@ -542,36 +542,34 @@ public class IntakeCommands {
 
     public static class SampleSubmIntakeCmd extends SequentialCommandGroup {
         public SampleSubmIntakeCmd(IntakeSubsystem intakeSubsystem) {
-            this(intakeSubsystem, 0);
+            this(intakeSubsystem, 0.5);
         }
 
         public SampleSubmIntakeCmd(IntakeSubsystem intakeSubsystem, double angle) {
             addCommands(
                     new ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
-                    new WaitCommand(200),
+                    new WaitCommand(250),
                     new SetRotationCmd(intakeSubsystem, angle),
-                    new WaitCommand((long) angle * 500),
+                    new WaitCommand((long) Math.abs(angle - 0.5) * 500),
                     new OpenScrewCmd(intakeSubsystem, true),
                     new ClawStageCmd(intakeSubsystem, ClawStages.ROTATE_HEIGHT),
                     //new WaitCommand(500),
                     new RotateBackCmd(intakeSubsystem),
-                    new WaitCommand((long) Math.abs(angle) * 500),
+                    new WaitCommand((long) Math.abs(angle - 0.5) * 500),
                     new ClawStageCmd(intakeSubsystem, ClawStages.INTAKE)
             );
             addRequirements(intakeSubsystem);
         }
 
         public SampleSubmIntakeCmd(IntakeSubsystem intakeSubsystem, Supplier<Double> angle) {
-            double position = (angle.get() > 0) ? angle.get() : 180 + angle.get();
+            double position = angle.get() + 90;
             double wanted = ((position / 180 - 0.5) * 2 / 3 + 0.5);
-            if (wanted > 0.7) {
-                wanted = 0;
-            }
+
             addCommands(
                     new ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
                     new WaitCommand(350),
                     new SetRotationCmd(intakeSubsystem, angle),
-                    new WaitCommand((long) wanted * 950),
+                    new WaitCommand((long) wanted * 1500),
                     new OpenScrewCmd(intakeSubsystem, true),
                     new ClawStageCmd(intakeSubsystem, ClawStages.ROTATE_HEIGHT),
                     //new WaitCommand(100),
@@ -597,7 +595,7 @@ public class IntakeCommands {
             addCommands(
                     new ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
                     new WaitCommand(100),
-                    new SetRotationCmd(intakeSubsystem, 0),
+                    new SetRotationCmd(intakeSubsystem, 0.5),
                     new OpenScrewCmd(intakeSubsystem, true),
                     new RotateBackCmd(intakeSubsystem),
                     new ClawStageCmd(intakeSubsystem, ClawStages.INTAKE));
@@ -614,8 +612,10 @@ public class IntakeCommands {
 //                    new Wait(intakeSubsystem, 0.2),
                     new ParallelCommandGroup(
                             new SlideHomeCmd(intakeSubsystem, initTime),
-                            new SetRotationCmd(intakeSubsystem, 0)
+                            new SetRotationCmd(intakeSubsystem, 0.5)
                     ));
+
+
             addRequirements(intakeSubsystem);
         }
 
@@ -630,7 +630,7 @@ public class IntakeCommands {
                     //new Wait(intakeSubsystem, 0),
                     new ParallelCommandGroup(
                             new SlideHomeCmd(intakeSubsystem, initTime),
-                            new SetRotationCmd(intakeSubsystem, 0)
+                            new SetRotationCmd(intakeSubsystem, 0.5)
                     ));
             addRequirements(intakeSubsystem);
         }
@@ -653,6 +653,7 @@ public class IntakeCommands {
                     new SetPowerCmd(intakeSubsystem, -0.18),
                     //new Wait(intakeSubsystem, 0.1), //for safety
                     new DischargeGrabCmd(dischargeSubsystem),
+                    new WaitCommand(100),
                     new CloseScrewCmd(intakeSubsystem, false),
                     new SetPowerCmd(intakeSubsystem, 0),
                     new SlideUntilCmd(intakeSubsystem, intakeSubsystem.minSlidesPos + slidesBackAfterTransfer + 40, 0.4, false)

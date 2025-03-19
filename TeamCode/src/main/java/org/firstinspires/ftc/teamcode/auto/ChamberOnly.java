@@ -102,7 +102,10 @@ public class ChamberOnly extends CommandOpMode {
 //                                moverWentWent(0)
                         ),
 
-                        new DischargeCommands.GoHomeCmd(dischargeSubsystem)
+                        new SequentialCommandGroup(
+                                new WaitCommand(800),
+                                new DischargeCommands.GoHomeCmd(dischargeSubsystem)
+                        )
 
                 ),
 
@@ -118,7 +121,8 @@ public class ChamberOnly extends CommandOpMode {
                                         wait(1000),
                                         new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 2050))),
                         //goTo(2.7, 0.22, -90, 0.04, 1),
-                        new IntakeCommands.SampleGroundIntakeCmd(intakeSubsystem),
+                        new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem),
+                        new WaitCommand(100),
                         moverGoGo(0.5)
 
                 ),
@@ -142,8 +146,11 @@ public class ChamberOnly extends CommandOpMode {
                 chamberDischarge(1.83, 1),
 
                 new ParallelCommandGroup(
-                        new DischargeCommands.GoHomeCmd(dischargeSubsystem),
-                        goToTwoSpeeds(2.5, 0.24, -90, 0.08, 1, 0.4, 0.15)) //go back fast
+                        new SequentialCommandGroup(
+                                new WaitCommand(800),
+                                new DischargeCommands.GoHomeCmd(dischargeSubsystem)
+                        ),
+                        goToTwoSpeeds(3, 0.7, -90, 0.08, 1, 0.4, 0.15)) //go back fast
 
         ));
     }
@@ -210,8 +217,11 @@ public class ChamberOnly extends CommandOpMode {
     public CommandBase hpIntake() {
         return new SequentialCommandGroup(
                 new ParallelCommandGroup(
-                        new DischargeCommands.GoHomeCmd(dischargeSubsystem),
-                        goTo(2.4, 0.58, -42, 0.03, 0.8),
+                        new SequentialCommandGroup(
+                                new WaitCommand(800),
+                                new DischargeCommands.GoHomeCmd(dischargeSubsystem)
+                        ),
+                        goTo(2.408, 0.656, -45, 0.03, 0.9),
                         new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 2120)),
                 new IntakeCommands.SampleGroundIntakeCmd(intakeSubsystem)
 

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.commands;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.CommandBase;
+import com.arcrobotics.ftclib.command.ConditionalCommand;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
@@ -18,9 +19,33 @@ import org.firstinspires.ftc.teamcode.subsystems.LimelightSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Pipelines;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 public class LimelightCommands {
+    public static class SupplierWaitCmd extends CommandBase {
+        Supplier<Boolean> wait;
+        double waitTime = -0.1;
+        ElapsedTime time = new ElapsedTime();
+
+        public SupplierWaitCmd(Supplier<Boolean> wait) {
+            this.wait = wait;
+        }
+
+        @Override
+        public void initialize() {
+            time.reset();
+            if (wait.get()) {
+                waitTime = 0.5;
+            }
+        }
+
+        @Override
+        public boolean isFinished() {
+            return (time.seconds() > waitTime);
+        }
+    }
+
     @Config
     public static class AlignXCmd extends CommandBase {
         LimelightSubsystem limelight;
@@ -128,7 +153,7 @@ public class LimelightCommands {
         double angle;
         long waitTime = 0;
         Supplier<Long> wait = () -> waitTime;
-        Supplier<Boolean> mover = () -> limelightSubsystem.getYDistance() < 1350;
+        BooleanSupplier mover = () -> limelightSubsystem.getYDistance() < 1350;
 
 
         public LimelightStartIntake(LimelightSubsystem limelightSubsystem, IntakeSubsystem intakeSubsystem, DischargeSubsystem dischargeSubsystem, MecanumDrive mecanumDrive) {
@@ -142,13 +167,8 @@ public class LimelightCommands {
 //                            addCommands(new InstantCommand(() -> mecanumDrive.drive(-0.3, 0, 0, 0.2)).withTimeout(300));
 //                        }
 //                    }),
-                    new InstantCommand(() -> {
-                        if (mover.get()) {
-                            mecanumDrive.setMoverServo(0.5);
-                            waitTime = 500;
-                        }
-                    }),
-                    new WaitCommand(wait.get()),
+                    new ConditionalCommand(
+                            new SequentialCommandGroup(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new WaitCommand(500)), new WaitCommand(0), mover),
 //                    new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)),
                     new AlignXCmd(limelightSubsystem, mecanumDrive)/*.withTimeout(1000)*/,
                     new AlignXCmd(limelightSubsystem, mecanumDrive).withTimeout(250),
@@ -164,6 +184,7 @@ public class LimelightCommands {
 //                    new WaitCommand(300),
 //                    new IntakeCommands.OpenScrewCmd(intakeSubsystem, true),
                     new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem, limelightSubsystem::getAngle),
+                    new InstantCommand(() -> mecanumDrive.setMoverServo(0)),
 
 
                     new InstantCommand(new Runnable() {
@@ -190,5 +211,6 @@ public class LimelightCommands {
             limelightSubsystem.stopLimelight();
         }
     }
+
 
 }

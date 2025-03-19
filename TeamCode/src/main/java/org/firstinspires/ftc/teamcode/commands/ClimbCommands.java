@@ -45,8 +45,8 @@ public class ClimbCommands {
 
         @Override
         public void execute() {
-            climbSubsystem.setRServoPower(rPower.get());
-            climbSubsystem.setLServoPower(lPower.get());
+            climbSubsystem.setRServoPower(-rPower.get());
+            climbSubsystem.setLServoPower(-lPower.get());
         }
 
         @Override
@@ -84,11 +84,11 @@ public class ClimbCommands {
         @Override
         public void execute() {
             if (servo.equals("right"))
-                climbSubsystem.setRServoPower(power);
+                climbSubsystem.setRServoPower(-power);
             else if (servo.equals("left"))
                 climbSubsystem.setLServoPower(power);
             else {
-                climbSubsystem.setRServoPower(power);
+                climbSubsystem.setRServoPower(-power);
                 climbSubsystem.setLServoPower(power);
             }
 

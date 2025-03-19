@@ -4,13 +4,13 @@ import com.arcrobotics.ftclib.command.CommandBase;
 
 
 import org.firstinspires.ftc.teamcode.subsystems.RobotState;
-import org.firstinspires.ftc.teamcode.teleop.Echo;
+import org.firstinspires.ftc.teamcode.teleop.EchoRed;
 
 public class SetStateCommands {
     public static class NoneStateCmd extends CommandBase {
         @Override
         public void initialize() {
-            Echo.setRobotState(RobotState.NONE);
+            EchoRed.setRobotState(RobotState.NONE);
         }
 
         @Override
@@ -22,7 +22,7 @@ public class SetStateCommands {
     public static class ClimbStateCmd extends CommandBase {
         @Override
         public void initialize() {
-            Echo.setRobotState(RobotState.CLIMB);
+            EchoRed.setRobotState(RobotState.CLIMB);
         }
 
         @Override
@@ -35,7 +35,7 @@ public class SetStateCommands {
     public static class BasketStateCmd extends CommandBase {
         @Override
         public void initialize() {
-            Echo.setRobotState(RobotState.BASKET);
+            EchoRed.setRobotState(RobotState.BASKET);
         }
 
         @Override
@@ -47,7 +47,7 @@ public class SetStateCommands {
     public static class ChamberStateCmd extends CommandBase {
         @Override
         public void initialize() {
-            Echo.setRobotState(RobotState.CHAMBER);
+            EchoRed.setRobotState(RobotState.CHAMBER);
         }
 
         @Override
@@ -59,7 +59,7 @@ public class SetStateCommands {
     public static class HPIntakeStateCmd extends CommandBase {
         @Override
         public void initialize() {
-            Echo.setRobotState(RobotState.HPINTAKE);
+            EchoRed.setRobotState(RobotState.HPINTAKE);
         }
 
         @Override
@@ -71,7 +71,7 @@ public class SetStateCommands {
     public static class AutoChamberStateCmd extends CommandBase {
         @Override
         public void initialize() {
-            Echo.setRobotState(RobotState.AUTOCHAMBER);
+            EchoRed.setRobotState(RobotState.AUTOCHAMBER);
         }
 
         @Override
@@ -83,7 +83,7 @@ public class SetStateCommands {
     public static class AutoIntakeStateCmd extends CommandBase {
         @Override
         public void initialize() {
-            Echo.setRobotState(RobotState.AUTOINTAKE);
+            EchoRed.setRobotState(RobotState.AUTOINTAKE);
         }
 
         @Override
@@ -95,7 +95,7 @@ public class SetStateCommands {
     public static class IntakeStateCmd extends CommandBase {
         @Override
         public void initialize() {
-            Echo.setRobotState(RobotState.INTAKE);
+            EchoRed.setRobotState(RobotState.INTAKE);
         }
 
         @Override
